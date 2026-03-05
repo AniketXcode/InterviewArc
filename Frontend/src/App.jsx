@@ -1,13 +1,12 @@
-import Landing from './components/landing'
+import { AuthProvider } from './context/AuthContext';
+import AppRoutes from './routes/AppRoutes';
 
 function App() {
-
-
   return (
-    <div>
-     <Landing />
-    </div>
-  )
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
