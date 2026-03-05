@@ -1,15 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Menu,
-  X,
-  Mic,
-  Brain,
-  BarChart3,
-  Sparkles,
-  Shield,
-  Rocket
-} from "lucide-react";
+import { Menu, X, Mic, Brain, ChartBar as BarChart3, Sparkles, Shield, Rocket } from "lucide-react";
 
 export default function Landing() {
   const [scrolled, setScrolled] = useState(false);

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { interviewService } from '../../services/interviewService';
-import { BarChart3, LogOut, Plus, TrendingUp } from 'lucide-react';
+import { ChartBar as BarChart3, LogOut, Plus, TrendingUp } from 'lucide-react';
 
 export default function Dashboard() {
   const navigate = useNavigate();

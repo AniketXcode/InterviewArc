@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { interviewService } from '../../services/interviewService';
-import { BarChart3, Loader, ArrowRight } from 'lucide-react';
+import { ChartBar as BarChart3, Loader, ArrowRight } from 'lucide-react';
 
 export default function InterviewSummary() {
   const { id } = useParams();
