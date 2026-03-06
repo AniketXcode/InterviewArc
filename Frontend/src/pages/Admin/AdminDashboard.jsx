@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { Users, BarChart3, TrendingUp, Activity } from 'lucide-react';
+import { Users, ChartBar as BarChart3, TrendingUp, Activity } from 'lucide-react';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
