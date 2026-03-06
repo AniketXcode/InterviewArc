@@ -11,6 +11,7 @@ import InterviewSummary from '../pages/Interview/InterviewSummary';
 import History from '../pages/Dashboard/History';
 import Performance from '../pages/Dashboard/Performance';
 import Insights from '../pages/Dashboard/Insights';
+import Profile from '../pages/Profile/Profile';
 
 export default function AppRoutes() {
   return (
@@ -74,6 +75,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <Insights />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

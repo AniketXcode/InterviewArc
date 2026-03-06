@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useVoiceInput } from '../../hooks/useVoiceInput';
 import { interviewService } from '../../services/interviewService';
 import { aiService } from '../../services/aiService';
 import { Loader, Send, Mic, Square } from 'lucide-react';
@@ -17,9 +18,9 @@ export default function InterviewRoom() {
   const [responses, setResponses] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(1);
   const [responseText, setResponseText] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { isRecording, transcript, recordingTime, startRecording, stopRecording, resetTranscript } = useVoiceInput();
 
   useEffect(() => {
     initializeInterview();
@@ -121,9 +122,23 @@ export default function InterviewRoom() {
     }
   };
 
-  const toggleRecording = () => {
-    setIsRecording(!isRecording);
+  const handleToggleRecording = () => {
+    if (isRecording) {
+      stopRecording();
+      if (transcript) {
+        setResponseText(transcript);
+        resetTranscript();
+      }
+    } else {
+      startRecording();
+    }
   };
+
+  useEffect(() => {
+    if (transcript && !isRecording) {
+      setResponseText(transcript);
+    }
+  }, [transcript, isRecording]);
 
   if (!interview || questions.length === 0) {
     return (
@@ -173,7 +188,7 @@ export default function InterviewRoom() {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={toggleRecording}
+                    onClick={handleToggleRecording}
                     className={`flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition ${
                       isRecording
                         ? 'bg-red-500/20 border border-red-500 text-red-400'
@@ -181,7 +196,7 @@ export default function InterviewRoom() {
                     }`}
                   >
                     {isRecording ? <Square size={18} /> : <Mic size={18} />}
-                    {isRecording ? 'Stop Recording' : 'Start Recording'}
+                    {isRecording ? `Stop (${recordingTime}s)` : 'Start Recording'}
                   </button>
 
                   <button
