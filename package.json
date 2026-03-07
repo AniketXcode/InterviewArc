@@ -1,0 +1,17 @@
+{
+  "name": "interviewarc",
+  "version": "1.0.0",
+  "description": "AI-powered interview practice platform",
+  "private": true,
+  "scripts": {
+    "dev": "cd Frontend && npm run dev",
+    "build": "cd Frontend && npm run build",
+    "preview": "cd Frontend && npm run preview",
+    "lint": "cd Frontend && npm run lint",
+    "install:all": "npm install && cd Frontend && npm install && cd ../Backend && npm install",
+    "start": "cd Frontend && npm run preview"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
