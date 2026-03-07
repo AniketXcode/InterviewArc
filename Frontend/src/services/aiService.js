@@ -1,11 +1,26 @@
+import apiService from './apiService.js';
+
 export const aiService = {
   async generateQuestion(jobRole, jobDomain, questionNumber, previousQuestions = []) {
-    const context = previousQuestions.length > 0
-      ? `Previous questions: ${previousQuestions.map(q => q.question_text).join('; ')}`
-      : '';
+    try {
+      // Determine category based on question number
+      const category = questionNumber === 1 ? 'behavioral' : questionNumber <= 3 ? 'technical' : 'situational';
+      const difficulty = 'intermediate'; // Default difficulty
 
-    const prompt = `Generate a ${questionNumber === 1 ? 'behavioral' : questionNumber <= 3 ? 'technical' : 'situational'} interview question for a ${jobRole} position in ${jobDomain}. ${context}. Response should be a single question only.`;
+      // Call backend API to generate question with GPT-4
+      const response = await apiService.generateQuestion(jobRole, difficulty, category);
+      
+      if (response.success && response.data) {
+        return {
+          question_text: response.data.question,
+          question_type: category,
+        };
+      }
+    } catch (error) {
+      console.warn('[AI Service] Backend generation failed, using fallback:', error.message);
+    }
 
+    // Fallback to local generation if API fails
     return {
       question_text: `${questionNumber === 1 ? '[Behavioral]' : questionNumber <= 3 ? '[Technical]' : '[Situational]'} ${this.getDefaultQuestion(jobRole, questionNumber)}`,
       question_type: questionNumber === 1 ? 'behavioral' : questionNumber <= 3 ? 'technical' : 'situational',
@@ -25,6 +40,27 @@ export const aiService = {
   },
 
   async evaluateResponse(question, response, jobRole) {
+    try {
+      // Call backend API for GPT-4 evaluation
+      const apiResponse = await apiService.evaluateResponse(question, response, jobRole, 'intermediate');
+      
+      if (apiResponse.success && apiResponse.data) {
+        return {
+          score: apiResponse.data.score || 0,
+          communication_score: apiResponse.data.score || 0,
+          filler_words: 0,
+          pace_score: 75,
+          clarity_score: apiResponse.data.score || 0,
+          strengths: (apiResponse.data.strengths || []).join(', '),
+          weaknesses: (apiResponse.data.improvements || []).join(', '),
+          improvement_tips: apiResponse.data.feedback || '',
+        };
+      }
+    } catch (error) {
+      console.warn('[AI Service] Backend evaluation failed, using fallback:', error.message);
+    }
+
+    // Fallback to local evaluation if API fails
     const wordCount = response.split(/\s+/).length;
     const hasMetrics = /\d+%|\$\d+|metric/i.test(response);
     const hasAction = /I\s+(?:created|built|developed|designed|implemented|led)/i.test(response);
@@ -78,7 +114,26 @@ export const aiService = {
     return tips.slice(0, 3).join('; ');
   },
 
-  async synthesizeFeedback(allResponses) {
+  async synthesizeFeedback(allResponses, interview) {
+    try {
+      // Call backend API for comprehensive report generation
+      const apiResponse = await apiService.generateReport(interview);
+      
+      if (apiResponse.success && apiResponse.data) {
+        return {
+          overall_score: apiResponse.data.overallScore || 0,
+          total_questions: allResponses.length,
+          recommendation: apiResponse.data.performanceSummary || 'Practice more to improve your interview skills.',
+          top_strengths: apiResponse.data.topStrengths || [],
+          areas_for_improvement: apiResponse.data.areasForImprovement || [],
+          recommendations: apiResponse.data.recommendations || [],
+        };
+      }
+    } catch (error) {
+      console.warn('[AI Service] Backend report generation failed, using fallback:', error.message);
+    }
+
+    // Fallback to local synthesis if API fails
     const scores = allResponses.map(r => r.score || 0);
     const overallScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 
