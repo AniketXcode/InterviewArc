@@ -32,6 +32,57 @@ import { setUserData } from '../redux/userSlice'
 
 let vapiCleanupPromise = Promise.resolve()
 const AUTO_ADVANCE_DELAY_MS = 3000
+const FEMALE_BROWSER_VOICE_PREFERENCES = [
+  'aria',
+  'jenny',
+  'sonia',
+  'heera',
+  'samantha',
+  'google uk english female',
+  'google us english',
+  'female',
+  'zira'
+]
+const MALE_BROWSER_VOICE_PREFERENCES = [
+  'guy',
+  'davis',
+  'david',
+  'mark',
+  'ravi',
+  'google uk english male',
+  'male'
+]
+
+const getBrowserVoiceIdentity = (voice) =>
+  `${voice?.name || ''} ${voice?.voiceURI || ''} ${voice?.lang || ''}`.toLowerCase()
+
+const pickPreferredBrowserVoice = (voices, preferences) => {
+  for (const preference of preferences) {
+    const naturalVoice = voices.find((voice) => {
+      const identity = getBrowserVoiceIdentity(voice)
+      return (
+        identity.includes(preference) &&
+        (
+          identity.includes('natural') ||
+          identity.includes('neural') ||
+          identity.includes('online')
+        )
+      )
+    })
+
+    if (naturalVoice) {
+      return naturalVoice
+    }
+
+    const directMatch = voices.find((voice) => getBrowserVoiceIdentity(voice).includes(preference))
+
+    if (directMatch) {
+      return directMatch
+    }
+  }
+
+  return null
+}
 
 function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
   const dispatch = useDispatch()
@@ -86,7 +137,7 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
   const speechRecognitionLanguage =
     import.meta.env.VITE_SPEECH_RECOGNITION_LANGUAGE?.trim() || 'hi-IN'
   const hasVapiConfigured = Boolean(vapiConfig.publicKey)
-  const fallbackVoiceEngine = hasVapiConfigured ? 'vapi' : 'browser'
+  const fallbackVoiceEngine = 'browser'
   const shouldUseTavus = voiceEngineOverride
     ? voiceEngineOverride === 'tavus'
     : tavusConfig.enabled
@@ -177,6 +228,15 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
       stringifyErrorPart(error?.message),
       stringifyErrorPart(error?.details)
     ].find(Boolean) || 'Unknown Vapi error'
+    const normalizedMessage = message.toLowerCase()
+
+    if (normalizedMessage.includes('out of conversational credits')) {
+      return 'Voice agent credits are unavailable right now. Switched to browser voice automatically.'
+    }
+
+    if (normalizedMessage.includes('insufficient credits')) {
+      return 'Voice agent credits are unavailable right now. Switched to browser voice automatically.'
+    }
 
     if (error?.type === 'audio-observer-setup-error') {
       return 'Vapi connected, but assistant speech tracking could not start correctly.'
@@ -306,11 +366,7 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
       const voices = window.speechSynthesis.getVoices()
       if (!voices.length) return
 
-      const femaleVoice = voices.find((voice) =>
-        voice.name.toLowerCase().includes('zira') ||
-        voice.name.toLowerCase().includes('samantha') ||
-        voice.name.toLowerCase().includes('female')
-      )
+      const femaleVoice = pickPreferredBrowserVoice(voices, FEMALE_BROWSER_VOICE_PREFERENCES)
 
       if (femaleVoice) {
         setSelectedVoice(femaleVoice)
@@ -318,11 +374,7 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
         return
       }
 
-      const maleVoice = voices.find((voice) =>
-        voice.name.toLowerCase().includes('david') ||
-        voice.name.toLowerCase().includes('mark') ||
-        voice.name.toLowerCase().includes('male')
-      )
+      const maleVoice = pickPreferredBrowserVoice(voices, MALE_BROWSER_VOICE_PREFERENCES)
 
       if (maleVoice) {
         setSelectedVoice(maleVoice)
@@ -331,7 +383,13 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
       }
 
       setSelectedVoice(voices[0])
-      setVoiceGender('female')
+      setVoiceGender(
+        MALE_BROWSER_VOICE_PREFERENCES.some((preference) =>
+          getBrowserVoiceIdentity(voices[0]).includes(preference)
+        )
+          ? 'male'
+          : 'female'
+      )
     }
 
     loadVoices()
@@ -729,8 +787,8 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
       const utterance = new SpeechSynthesisUtterance(humanText)
 
       utterance.voice = selectedVoice
-      utterance.rate = 0.92
-      utterance.pitch = 1.05
+      utterance.rate = voiceGender === 'female' ? 0.9 : 0.94
+      utterance.pitch = voiceGender === 'female' ? 0.92 : 0.98
       utterance.volume = 1
 
       utterance.onstart = () => {

@@ -10,11 +10,8 @@ import axios from 'axios'
 import { ServerUrl } from '../App'
 import { setUserData } from '../redux/userSlice'
 import AuthModel from './AuthModel'
-import { useTheme } from '../context/ThemeContext'
-import { BsMoon, BsSun } from 'react-icons/bs'
 
 function Navbar() {
-  const { theme, toggleTheme } = useTheme()
   const { userData } = useSelector((state) => state.user)
   const [showCreditPopup, setShowCreditPopup] = useState(false)
   const [showUserPopup, setShowUserPopup] = useState(false)
@@ -156,13 +153,6 @@ function Navbar() {
           >
             <BsGift size={15} />
             Rewards
-          </button>
-
-          <button
-            onClick={toggleTheme}
-            className='flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-          >
-            {theme === 'dark' ? <BsSun size={15} /> : <BsMoon size={15} />}
           </button>
 
           <div className='relative'>
