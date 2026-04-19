@@ -17,7 +17,7 @@ import AdminRewardOrders from './pages/AdminRewardOrders'
 import { AnimatePresence, motion } from 'motion/react'
 import { useLocation } from 'react-router-dom'
 
-export const ServerUrl  = "http://localhost:8000"
+export const ServerUrl  = "https://interviewarc.onrender.com"
 
 function App() {
 
