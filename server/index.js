@@ -10,8 +10,39 @@ import interviewRouter from "./routes/interview.route.js"
 import paymentRouter from "./routes/payment.route.js"
 
 const app = express()
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.CLIENT_URL_PROD,
+  "https://interviewarc.tech",
+  "https://www.interviewarc.tech",
+].filter(Boolean)
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) {
+    return true
+  }
+
+  if (allowedOrigins.includes(origin)) {
+    return true
+  }
+
+  try {
+    const { hostname } = new URL(origin)
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".vercel.app")
+  } catch {
+    return false
+  }
+}
+
 app.use(cors({
-  origin: "https://interviewarc.tech",
+  origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) {
+      callback(null, true)
+      return
+    }
+
+    callback(new Error("CORS origin not allowed"))
+  },
   credentials: true
 }));
 
