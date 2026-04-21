@@ -1,66 +1,47 @@
-import express from "express"
-import dotenv from "dotenv"
-import connectDb from "./config/connectDb.js"
-import cookieParser from "cookie-parser"
-dotenv.config()
-import cors from "cors"
-import authRouter from "./routes/auth.route.js"
-import userRouter from "./routes/user.route.js"
-import interviewRouter from "./routes/interview.route.js"
-import paymentRouter from "./routes/payment.route.js"
+import express from "express";
+import dotenv from "dotenv";
+import connectDb from "./config/connectDb.js";
+import cookieParser from "cookie-parser";
+import cors from "cors";
 
-const app = express()
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  process.env.CLIENT_URL_PROD,
-  "https://interviewarc.tech",
-  "https://www.interviewarc.tech",
-].filter(Boolean)
+import authRouter from "./routes/auth.route.js";
+import userRouter from "./routes/user.route.js";
+import interviewRouter from "./routes/interview.route.js";
+import paymentRouter from "./routes/payment.route.js";
 
-const isAllowedOrigin = (origin) => {
-  if (!origin) {
-    return true
-  }
+dotenv.config();
 
-  if (allowedOrigins.includes(origin)) {
-    return true
-  }
+const app = express();
 
-  try {
-    const { hostname } = new URL(origin)
-    return hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".vercel.app")
-  } catch {
-    return false
-  }
-}
 
 app.use(cors({
-  origin: (origin, callback) => {
-    if (isAllowedOrigin(origin)) {
-      callback(null, true)
-      return
-    }
-
-    callback(new Error("CORS origin not allowed"))
-  },
+  origin: [
+    "https://interviewarc.tech",
+    "https://www.interviewarc.tech",
+    "https://interview-arc.vercel.app"
+  ],
   credentials: true
 }));
+
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");
   next();
 });
 
-app.use(express.json())
-app.use(cookieParser())
+app.use(express.json());
+app.use(cookieParser());
 
-app.use("/api/auth" , authRouter)
-app.use("/api/user", userRouter)
-app.use("/api/interview" , interviewRouter)
-app.use("/api/payment" , paymentRouter)
 
-const PORT = process.env.PORT || 6000
-app.listen(PORT , ()=>{
-    console.log(`Server running on port ${PORT}`)
-    connectDb()
-})
+app.use("/api/auth", authRouter);
+app.use("/api/user", userRouter);
+app.use("/api/interview", interviewRouter);
+app.use("/api/payment", paymentRouter);
+
+
+const PORT = process.env.PORT || 6000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  connectDb();
+});
