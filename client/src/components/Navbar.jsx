@@ -10,6 +10,7 @@ import axios from 'axios'
 import { ServerUrl } from '../App'
 import { setUserData } from '../redux/userSlice'
 import AuthModel from './AuthModel'
+import { persistAuthToken } from '../utils/authToken'
 
 function Navbar() {
   const { userData } = useSelector((state) => state.user)
@@ -24,6 +25,7 @@ function Navbar() {
     try {
       await axios.get(ServerUrl + '/api/auth/logout', { withCredentials: true })
 
+      persistAuthToken('')
       dispatch(setUserData(null))
 
       setShowCreditPopup(false)

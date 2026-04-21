@@ -13,11 +13,14 @@ import InterviewReport from "./pages/InterviewReport";
 import ResumeBuilder from "./pages/ResumeBuilder";
 import RewardsHub from "./pages/RewardsHub";
 import AdminRewardOrders from "./pages/AdminRewardOrders";
+import { bootstrapAuthToken, persistAuthToken } from "./utils/authToken";
 // eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "motion/react";
 import { useLocation } from "react-router-dom";
 
 export const ServerUrl = "https://interviewarc.onrender.com";
+
+bootstrapAuthToken();
 
 function App() {
   const dispatch = useDispatch();
@@ -30,6 +33,10 @@ function App() {
         dispatch(setUserData(result.data));
       } catch (error) {
         console.log(error);
+        const errorMessage = error?.response?.data?.message || "";
+        if (errorMessage.includes("token")) {
+          persistAuthToken("");
+        }
         dispatch(setUserData(null));
       }
     };

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import DailyIframe from '@daily-co/daily-js'
 import Vapi from '@vapi-ai/web'
+import { HeadTTS } from '@met4citizen/headtts'
 import maleVideo from '../assets/videos/male-ai.mp4'
 import femaleVideo from '../assets/videos/female-ai.mp4'
 import Timer from './Timer'
@@ -28,6 +29,12 @@ import {
   createInterviewVapiAssistant,
   getVapiRuntimeConfig
 } from '../utils/vapi'
+import {
+  getHeadTtsEndpoints,
+  getHeadTtsRuntimeConfig,
+  getHeadTtsVoiceGender,
+  isHeadTtsSupported
+} from '../utils/headtts'
 import { setUserData } from '../redux/userSlice'
 
 let vapiCleanupPromise = Promise.resolve()
@@ -108,11 +115,14 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
   const [isVapiSessionReady, setIsVapiSessionReady] = useState(false)
   const [tavusSession, setTavusSession] = useState(null)
   const [isTavusSessionReady, setIsTavusSessionReady] = useState(false)
+  const [isHeadTtsReady, setIsHeadTtsReady] = useState(false)
   const [voiceEngineOverride, setVoiceEngineOverride] = useState(null)
 
   const recognitionRef = useRef(null)
   const videoRef = useRef(null)
   const vapiRef = useRef(null)
+  const headTtsRef = useRef(null)
+  const activeHeadTtsSourceRef = useRef(null)
   const tavusCallRef = useRef(null)
   const tavusVideoRef = useRef(null)
   const tavusMediaStreamRef = useRef(null)
@@ -134,18 +144,27 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
   const videoSource = voiceGender === 'male' ? maleVideo : femaleVideo
   const tavusConfig = getTavusRuntimeConfig()
   const vapiConfig = getVapiRuntimeConfig()
+  const headTtsConfig = getHeadTtsRuntimeConfig()
+  const headTtsPreloadVoicesKey = headTtsConfig.preloadVoices.join('|')
   const speechRecognitionLanguage =
     import.meta.env.VITE_SPEECH_RECOGNITION_LANGUAGE?.trim() || 'hi-IN'
   const hasVapiConfigured = Boolean(vapiConfig.publicKey)
+  const hasHeadTtsSupport = isHeadTtsSupported()
+  const shouldPreferHeadTts = headTtsConfig.enabled && hasHeadTtsSupport
   const fallbackVoiceEngine = 'browser'
   const shouldUseTavus = voiceEngineOverride
     ? voiceEngineOverride === 'tavus'
     : tavusConfig.enabled
+  const shouldUseHeadTts = voiceEngineOverride
+    ? voiceEngineOverride === 'headtts'
+    : !tavusConfig.enabled && shouldPreferHeadTts
   const shouldUseVapi = voiceEngineOverride
     ? voiceEngineOverride === 'vapi'
-    : !tavusConfig.enabled && hasVapiConfigured
+    : !tavusConfig.enabled && !shouldUseHeadTts && hasVapiConfigured
   const isVoiceReady = shouldUseTavus
     ? isTavusSessionReady
+    : shouldUseHeadTts
+      ? isHeadTtsReady
     : shouldUseVapi
       ? isVapiSessionReady
       : Boolean(selectedVoice)
@@ -155,6 +174,8 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
   const answerWordCount = answer.trim() ? answer.trim().split(/\s+/).length : 0
   const voiceEngineLabel = shouldUseTavus
     ? 'Tavus live avatar'
+    : shouldUseHeadTts
+      ? 'Free neural voice'
     : shouldUseVapi
       ? 'Vapi voice agent'
       : 'Browser voice'
@@ -220,6 +241,47 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
       await vapiRef.current.stop().catch(() => {})
       vapiRef.current = null
     }
+  }
+
+  const stopActiveHeadTtsSource = () => {
+    if (!activeHeadTtsSourceRef.current) {
+      return
+    }
+
+    try {
+      activeHeadTtsSourceRef.current.onended = null
+      activeHeadTtsSourceRef.current.stop()
+    } catch {
+      return
+    } finally {
+      activeHeadTtsSourceRef.current = null
+    }
+  }
+
+  const teardownHeadTts = () => {
+    stopActiveHeadTtsSource()
+
+    if (!headTtsRef.current) {
+      return
+    }
+
+    headTtsRef.current.clear?.()
+    headTtsRef.current.ws?.close?.()
+    headTtsRef.current.ww?.terminate?.()
+    headTtsRef.current = null
+  }
+
+  const fallbackFromHeadTts = (reason) => {
+    teardownHeadTts()
+    setIsHeadTtsReady(false)
+    setVoiceEngineOverride('browser')
+
+    if (speechFallbackTimeoutRef.current) {
+      clearTimeout(speechFallbackTimeoutRef.current)
+      speechFallbackTimeoutRef.current = null
+    }
+
+    setVoiceError(reason || 'Free neural voice could not start. Switched to browser voice automatically.')
   }
 
   const getVapiErrorMessage = (error) => {
@@ -303,6 +365,7 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
       speechFallbackTimeoutRef.current = null
     }
 
+    stopActiveHeadTtsSource()
     resetVideoPlayback()
     setIsAIPlaying(false)
 
@@ -334,7 +397,9 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
     setVoiceError('')
     setIsTavusSessionReady(false)
     setIsVapiSessionReady(false)
+    setIsHeadTtsReady(false)
     setTavusSession(null)
+    teardownHeadTts()
   }, [interviewId])
 
   useEffect(() => {
@@ -358,7 +423,73 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
   }
 
   useEffect(() => {
-    if (!interviewData || shouldUseVapi || shouldUseTavus) {
+    if (!interviewData || !shouldUseHeadTts || headTtsRef.current) {
+      return
+    }
+
+    let isDisposed = false
+
+    const startHeadTts = async () => {
+      try {
+        const preferredVoice = headTtsConfig.preferredVoice
+        const preloadVoices = Array.from(
+          new Set([
+            preferredVoice,
+            ...(headTtsConfig.preloadVoices.length ? headTtsConfig.preloadVoices : ['af_bella', 'am_fenrir'])
+          ])
+        )
+
+        const headTts = new HeadTTS({
+          endpoints: getHeadTtsEndpoints(),
+          voices: preloadVoices,
+          defaultVoice: preferredVoice,
+          defaultSpeed: headTtsConfig.speed
+        })
+
+        headTtsRef.current = headTts
+
+        await headTts.connect()
+        await headTts.setup({
+          voice: preferredVoice,
+          language: 'en-us',
+          speed: headTtsConfig.speed,
+          audioEncoding: 'wav'
+        })
+
+        if (isDisposed) {
+          teardownHeadTts()
+          return
+        }
+
+        setVoiceGender(getHeadTtsVoiceGender(preferredVoice))
+        setIsHeadTtsReady(true)
+        setVoiceError('')
+      } catch (error) {
+        console.log(error)
+
+        if (!isDisposed) {
+          fallbackFromHeadTts('Free neural voice could not load on this device. Switched to browser voice automatically.')
+        }
+      }
+    }
+
+    startHeadTts()
+
+    return () => {
+      isDisposed = true
+      setIsHeadTtsReady(false)
+      teardownHeadTts()
+    }
+  }, [
+    headTtsPreloadVoicesKey,
+    headTtsConfig.preferredVoice,
+    headTtsConfig.speed,
+    interviewData,
+    shouldUseHeadTts
+  ])
+
+  useEffect(() => {
+    if (!interviewData || shouldUseHeadTts || shouldUseVapi || shouldUseTavus) {
       return
     }
 
@@ -398,7 +529,7 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
     return () => {
       window.speechSynthesis.onvoiceschanged = null
     }
-  }, [shouldUseTavus, shouldUseVapi])
+  }, [shouldUseHeadTts, shouldUseTavus, shouldUseVapi])
 
   useEffect(() => {
     if (!interviewData || !shouldUseTavus || tavusCallRef.current) {
@@ -773,6 +904,69 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
         return
       }
 
+      if (shouldUseHeadTts) {
+        if (!headTtsRef.current || !isHeadTtsReady) {
+          resolve()
+          return
+        }
+
+        shouldResumeMicRef.current = resumeMic
+        stopMic()
+        stopActiveHeadTtsSource()
+        setSubtitle(text)
+        setIsAIPlaying(true)
+        speechResolveRef.current = resolve
+        speechFallbackTimeoutRef.current = setTimeout(() => {
+          finalizeSpeechPlayback()
+        }, Math.max(5000, text.length * 110))
+
+        const humanText = text
+          .replace(/:/g, ': ... ')
+          .replace(/,/g, ', ... ')
+          .replace(/\./g, '. ... ')
+
+        headTtsRef.current.settings.audioCtx.resume?.().catch(() => {})
+
+        headTtsRef.current
+          .synthesize({ input: humanText })
+          .then(async (messages) => {
+            for (const message of messages || []) {
+              const audioBuffer = message?.data?.audio
+
+              if (!audioBuffer || !headTtsRef.current) {
+                continue
+              }
+
+              await new Promise((playResolve) => {
+                const source = headTtsRef.current.settings.audioCtx.createBufferSource()
+                activeHeadTtsSourceRef.current = source
+                source.buffer = audioBuffer
+                source.connect(headTtsRef.current.settings.audioCtx.destination)
+                source.onended = () => {
+                  if (activeHeadTtsSourceRef.current === source) {
+                    activeHeadTtsSourceRef.current = null
+                  }
+                  playResolve()
+                }
+                source.start(0)
+              })
+            }
+
+            finalizeSpeechPlayback()
+          })
+          .catch((error) => {
+            console.log(error)
+            fallbackFromHeadTts('Free neural voice could not synthesize speech. Switched to browser voice automatically.')
+
+            if (speechResolveRef.current) {
+              speechResolveRef.current()
+              speechResolveRef.current = null
+            }
+          })
+
+        return
+      }
+
       if (!window.speechSynthesis || !selectedVoice) {
         resolve()
         return
@@ -1122,6 +1316,8 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
       if (!shouldUseVapi) {
         window.speechSynthesis.cancel()
       }
+
+      teardownHeadTts()
     }
   }, [shouldUseVapi])
 
@@ -1213,7 +1409,9 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
                   </div>
                   <p className='mt-3 text-sm leading-6 text-slate-100 sm:leading-7'>
                     {subtitle ||
-                      'The AI interviewer will speak here. Once the question is asked, answer naturally by voice, typing, or both.'}
+                      (shouldUseHeadTts && !isHeadTtsReady
+                        ? 'Loading the free neural voice model. The first question will start as soon as it is ready.'
+                        : 'The AI interviewer will speak here. Once the question is asked, answer naturally by voice, typing, or both.')}
                   </p>
                 </div>
               </div>

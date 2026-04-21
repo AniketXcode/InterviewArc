@@ -11,6 +11,7 @@ import { ServerUrl } from '../App'
 import { useDispatch, useSelector } from 'react-redux'
 import { setUserData } from '../redux/userSlice'
 import { useNavigate } from 'react-router-dom'
+import { persistAuthToken } from '../utils/authToken'
 
 const authBenefits = [
   'Start realistic AI mock interviews in seconds',
@@ -48,13 +49,16 @@ function Auth({ isModel = false }) {
         { withCredentials: true }
       )
 
-      dispatch(setUserData(result.data))
+      const { token = '', ...userPayload } = result.data || {}
+      persistAuthToken(token)
+      dispatch(setUserData(userPayload))
 
       if (!isModel) {
         navigate('/', { replace: true })
       }
     } catch (error) {
       console.log(error)
+      persistAuthToken('')
       dispatch(setUserData(null))
       setAuthError('Google sign-in did not finish. Please try again.')
     } finally {
