@@ -18,7 +18,7 @@ import { bootstrapAuthToken, persistAuthToken } from "./utils/authToken";
 import { AnimatePresence, motion } from "motion/react";
 import { useLocation } from "react-router-dom";
 
-export const ServerUrl =
+const ServerUrl =
   import.meta.env.VITE_SERVER_URL?.trim() || "https://interviewarc.onrender.com";
 
 bootstrapAuthToken();
