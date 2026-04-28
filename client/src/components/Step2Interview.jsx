@@ -112,6 +112,8 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
   const [micSupported, setMicSupported] = useState(true)
   const [submissionError, setSubmissionError] = useState('')
   const [voiceError, setVoiceError] = useState('')
+  const [elevenLabsConfig, setElevenLabsConfig] = useState(null)
+  const [isElevenLabsReady, setIsElevenLabsReady] = useState(false)
   const [isVapiSessionReady, setIsVapiSessionReady] = useState(false)
   const [tavusSession, setTavusSession] = useState(null)
   const [isTavusSessionReady, setIsTavusSessionReady] = useState(false)
@@ -122,6 +124,9 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
   const videoRef = useRef(null)
   const vapiRef = useRef(null)
   const headTtsRef = useRef(null)
+  const elevenLabsAudioRef = useRef(null)
+  const elevenLabsAudioUrlRef = useRef(null)
+  const previousSpokenTextRef = useRef('')
   const activeHeadTtsSourceRef = useRef(null)
   const tavusCallRef = useRef(null)
   const tavusVideoRef = useRef(null)
@@ -149,20 +154,34 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
   const speechRecognitionLanguage =
     import.meta.env.VITE_SPEECH_RECOGNITION_LANGUAGE?.trim() || 'hi-IN'
   const hasVapiConfigured = Boolean(vapiConfig.publicKey)
+  const isElevenLabsStatusResolved = tavusConfig.enabled || elevenLabsConfig !== null
   const hasHeadTtsSupport = isHeadTtsSupported()
+  const shouldPreferElevenLabs = Boolean(elevenLabsConfig?.enabled)
   const shouldPreferHeadTts = headTtsConfig.enabled && hasHeadTtsSupport
-  const fallbackVoiceEngine = 'browser'
+  const nonVapiFallbackVoiceEngine = shouldPreferElevenLabs
+    ? 'elevenlabs'
+    : shouldPreferHeadTts
+      ? 'headtts'
+      : 'browser'
+  const fallbackVoiceEngine = hasVapiConfigured
+    ? 'vapi'
+    : nonVapiFallbackVoiceEngine
   const shouldUseTavus = voiceEngineOverride
     ? voiceEngineOverride === 'tavus'
     : tavusConfig.enabled
+  const shouldUseElevenLabs = voiceEngineOverride
+    ? voiceEngineOverride === 'elevenlabs'
+    : !tavusConfig.enabled && !hasVapiConfigured && shouldPreferElevenLabs
   const shouldUseHeadTts = voiceEngineOverride
     ? voiceEngineOverride === 'headtts'
-    : !tavusConfig.enabled && shouldPreferHeadTts
+    : !tavusConfig.enabled && !hasVapiConfigured && isElevenLabsStatusResolved && !shouldUseElevenLabs && shouldPreferHeadTts
   const shouldUseVapi = voiceEngineOverride
     ? voiceEngineOverride === 'vapi'
-    : !tavusConfig.enabled && !shouldUseHeadTts && hasVapiConfigured
+    : !tavusConfig.enabled && hasVapiConfigured
   const isVoiceReady = shouldUseTavus
     ? isTavusSessionReady
+    : shouldUseElevenLabs
+      ? isElevenLabsReady
     : shouldUseHeadTts
       ? isHeadTtsReady
     : shouldUseVapi
@@ -174,6 +193,8 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
   const answerWordCount = answer.trim() ? answer.trim().split(/\s+/).length : 0
   const voiceEngineLabel = shouldUseTavus
     ? 'Tavus live avatar'
+    : shouldUseElevenLabs
+      ? 'ElevenLabs voice'
     : shouldUseHeadTts
       ? 'Free neural voice'
     : shouldUseVapi
@@ -224,8 +245,15 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
   const fallbackFromVapi = async (reason) => {
     setIsVapiSessionReady(false)
     hasVapiCallStartedRef.current = false
-    setVoiceEngineOverride('browser')
-    setVoiceError(reason || 'Vapi could not connect. Switched to browser voice automatically.')
+    setVoiceEngineOverride(nonVapiFallbackVoiceEngine)
+
+    if (nonVapiFallbackVoiceEngine === 'elevenlabs') {
+      setVoiceError(reason || 'Vapi could not connect. Switched to ElevenLabs voice automatically.')
+    } else if (nonVapiFallbackVoiceEngine === 'headtts') {
+      setVoiceError(reason || 'Vapi could not connect. Switched to the free neural voice automatically.')
+    } else {
+      setVoiceError(reason || 'Vapi could not connect. Switched to browser voice automatically.')
+    }
 
     if (speechFallbackTimeoutRef.current) {
       clearTimeout(speechFallbackTimeoutRef.current)
@@ -241,6 +269,32 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
       await vapiRef.current.stop().catch(() => {})
       vapiRef.current = null
     }
+  }
+
+  const stopActiveElevenLabsAudio = () => {
+    if (elevenLabsAudioRef.current) {
+      elevenLabsAudioRef.current.onended = null
+      elevenLabsAudioRef.current.pause()
+      elevenLabsAudioRef.current = null
+    }
+
+    if (elevenLabsAudioUrlRef.current) {
+      URL.revokeObjectURL(elevenLabsAudioUrlRef.current)
+      elevenLabsAudioUrlRef.current = null
+    }
+  }
+
+  const fallbackFromElevenLabs = (reason) => {
+    stopActiveElevenLabsAudio()
+    setIsElevenLabsReady(false)
+    setVoiceEngineOverride(shouldPreferHeadTts ? 'headtts' : 'browser')
+
+    if (speechFallbackTimeoutRef.current) {
+      clearTimeout(speechFallbackTimeoutRef.current)
+      speechFallbackTimeoutRef.current = null
+    }
+
+    setVoiceError(reason || 'ElevenLabs voice could not start. Switched to fallback voice automatically.')
   }
 
   const stopActiveHeadTtsSource = () => {
@@ -365,6 +419,7 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
       speechFallbackTimeoutRef.current = null
     }
 
+    stopActiveElevenLabsAudio()
     stopActiveHeadTtsSource()
     resetVideoPlayback()
     setIsAIPlaying(false)
@@ -395,10 +450,14 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
   useEffect(() => {
     setVoiceEngineOverride(null)
     setVoiceError('')
+    setElevenLabsConfig(null)
+    setIsElevenLabsReady(false)
     setIsTavusSessionReady(false)
     setIsVapiSessionReady(false)
     setIsHeadTtsReady(false)
     setTavusSession(null)
+    previousSpokenTextRef.current = ''
+    stopActiveElevenLabsAudio()
     teardownHeadTts()
   }, [interviewId])
 
@@ -421,6 +480,46 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
       console.log(error)
     }
   }
+
+  useEffect(() => {
+    if (!interviewData || tavusConfig.enabled) {
+      return
+    }
+
+    let isDisposed = false
+
+    const loadElevenLabsStatus = async () => {
+      try {
+        const result = await axios.get(ServerUrl + '/api/interview/elevenlabs/status', {
+          withCredentials: true
+        })
+
+        if (isDisposed) {
+          return
+        }
+
+        setElevenLabsConfig(result.data)
+        setIsElevenLabsReady(Boolean(result.data?.enabled))
+
+        if (result.data?.voiceGender) {
+          setVoiceGender(result.data.voiceGender === 'male' ? 'male' : 'female')
+        }
+      } catch (error) {
+        console.log(error)
+
+        if (!isDisposed) {
+          setElevenLabsConfig({ enabled: false })
+          setIsElevenLabsReady(false)
+        }
+      }
+    }
+
+    loadElevenLabsStatus()
+
+    return () => {
+      isDisposed = true
+    }
+  }, [interviewData, tavusConfig.enabled])
 
   useEffect(() => {
     if (!interviewData || !shouldUseHeadTts || headTtsRef.current) {
@@ -887,6 +986,70 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
         return
       }
 
+      if (shouldUseElevenLabs) {
+        if (!isElevenLabsReady) {
+          resolve()
+          return
+        }
+
+        shouldResumeMicRef.current = resumeMic
+        stopMic()
+        stopActiveElevenLabsAudio()
+        setSubtitle(text)
+        setIsAIPlaying(true)
+        videoRef.current?.play().catch(() => {})
+        speechResolveRef.current = resolve
+        speechFallbackTimeoutRef.current = setTimeout(() => {
+          finalizeSpeechPlayback()
+        }, Math.max(5000, text.length * 105))
+
+        axios.post(
+          ServerUrl + '/api/interview/elevenlabs/speech',
+          {
+            text,
+            previousText: previousSpokenTextRef.current
+          },
+          {
+            withCredentials: true,
+            responseType: 'blob'
+          }
+        )
+          .then(async (result) => {
+            const audioBlob = result?.data
+
+            if (!audioBlob || !(audioBlob instanceof Blob) || !audioBlob.size) {
+              throw new Error('Empty ElevenLabs audio response.')
+            }
+
+            const audioUrl = URL.createObjectURL(audioBlob)
+            const audio = new Audio(audioUrl)
+
+            elevenLabsAudioRef.current = audio
+            elevenLabsAudioUrlRef.current = audioUrl
+            previousSpokenTextRef.current = text
+
+            audio.onended = () => {
+              stopActiveElevenLabsAudio()
+              finalizeSpeechPlayback()
+            }
+
+            await audio.play()
+          })
+          .catch((error) => {
+            console.log(error)
+            fallbackFromElevenLabs(
+              error?.response?.data?.message || 'ElevenLabs voice could not synthesize speech. Switched to fallback voice automatically.'
+            )
+
+            if (speechResolveRef.current) {
+              speechResolveRef.current()
+              speechResolveRef.current = null
+            }
+          })
+
+        return
+      }
+
       if (shouldUseVapi) {
         if (!vapiRef.current || !isVapiSessionReady) {
           resolve()
@@ -1228,6 +1391,7 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
 
   const finishInterview = async () => {
     stopMic()
+    stopActiveElevenLabsAudio()
     setIsMicOn(false)
     setSubmissionError('')
     setIsFinishing(true)
@@ -1317,6 +1481,7 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
         window.speechSynthesis.cancel()
       }
 
+      stopActiveElevenLabsAudio()
       teardownHeadTts()
     }
   }, [shouldUseVapi])
@@ -1409,9 +1574,13 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
                   </div>
                   <p className='mt-3 text-sm leading-6 text-slate-100 sm:leading-7'>
                     {subtitle ||
-                      (shouldUseHeadTts && !isHeadTtsReady
-                        ? 'Loading the free neural voice model. The first question will start as soon as it is ready.'
-                        : 'The AI interviewer will speak here. Once the question is asked, answer naturally by voice, typing, or both.')}
+                      (shouldUseVapi && !isVapiSessionReady
+                        ? 'Connecting the Vapi voice agent. The first question will start as soon as it is ready.'
+                        : shouldUseElevenLabs && !isElevenLabsReady
+                          ? 'Connecting the ElevenLabs voice. The first question will start as soon as it is ready.'
+                          : shouldUseHeadTts && !isHeadTtsReady
+                            ? 'Loading the free neural voice model. The first question will start as soon as it is ready.'
+                            : 'The AI interviewer will speak here. Once the question is asked, answer naturally by voice, typing, or both.')}
                   </p>
                 </div>
               </div>

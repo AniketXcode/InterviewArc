@@ -23,6 +23,96 @@ const getTavusConfig = () => ({
   enabled: process.env.TAVUS_ENABLED === "true",
 });
 
+const getElevenLabsConfig = () => ({
+  apiKey: process.env.ELEVENLABS_API_KEY,
+  voiceId: process.env.ELEVENLABS_VOICE_ID || "JBFqnCBsd6RMkjVDRZzb",
+  modelId: process.env.ELEVENLABS_MODEL_ID || "eleven_flash_v2_5",
+  outputFormat: process.env.ELEVENLABS_OUTPUT_FORMAT || "mp3_44100_128",
+  voiceGender: (process.env.ELEVENLABS_VOICE_GENDER || "female").trim().toLowerCase(),
+});
+
+export const getElevenLabsStatus = async (req, res) => {
+  try {
+    const config = getElevenLabsConfig();
+
+    return res.status(200).json({
+      enabled: Boolean(config.apiKey),
+      voiceId: config.voiceId,
+      modelId: config.modelId,
+      outputFormat: config.outputFormat,
+      voiceGender: config.voiceGender === "male" ? "male" : "female",
+    });
+  } catch (error) {
+    return res.status(500).json({ message: `ElevenLabs status error ${error}` });
+  }
+};
+
+export const synthesizeElevenLabsSpeech = async (req, res) => {
+  try {
+    const { text, previousText } = req.body || {};
+    const normalizedText = typeof text === "string" ? text.trim() : "";
+    const normalizedPreviousText =
+      typeof previousText === "string" ? previousText.trim() : "";
+
+    if (!normalizedText) {
+      return res.status(400).json({ message: "Text is required for speech synthesis." });
+    }
+
+    const config = getElevenLabsConfig();
+
+    if (!config.apiKey) {
+      return res.status(503).json({ message: "ElevenLabs is not configured on the server." });
+    }
+
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${config.voiceId}?output_format=${config.outputFormat}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "xi-api-key": config.apiKey,
+          Accept: "audio/mpeg",
+        },
+        body: JSON.stringify({
+          text: normalizedText,
+          model_id: config.modelId,
+          ...(normalizedPreviousText ? { previous_text: normalizedPreviousText } : {}),
+          voice_settings: {
+            stability: 0.35,
+            similarity_boost: 0.8,
+            use_speaker_boost: true,
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const contentType = response.headers.get("content-type") || "";
+      let details = {};
+
+      if (contentType.includes("application/json")) {
+        details = await response.json().catch(() => ({}));
+      } else {
+        const textResponse = await response.text().catch(() => "");
+        details = { message: textResponse };
+      }
+
+      return res.status(response.status).json({
+        message: details?.detail?.message || details?.message || "ElevenLabs speech generation failed.",
+        details,
+      });
+    }
+
+    const audioBuffer = Buffer.from(await response.arrayBuffer());
+
+    res.setHeader("Content-Type", response.headers.get("content-type") || "audio/mpeg");
+    res.setHeader("Cache-Control", "no-store");
+    return res.status(200).send(audioBuffer);
+  } catch (error) {
+    return res.status(500).json({ message: `ElevenLabs speech error ${error}` });
+  }
+};
+
 export const analyzeResume = async (req, res) => {
   try {
     if (!req.file) {

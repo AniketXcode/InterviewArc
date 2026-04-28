@@ -13,15 +13,35 @@ dotenv.config();
 
 const app = express();
 
+const configuredOrigins = (process.env.CLIENT_URLS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
-app.use(cors({
-  origin: [
-    "https://interviewarc.tech",
-    "https://www.interviewarc.tech",
-    "https://interview-arc.vercel.app"
-  ],
-  credentials: true
-}));
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:4173",
+  "http://127.0.0.1:4173",
+  "https://interviewarc.tech",
+  "https://www.interviewarc.tech",
+  "https://interview-arc.vercel.app",
+  ...configuredOrigins,
+]);
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
+    credentials: true,
+  })
+);
 
 
 app.use((req, res, next) => {
