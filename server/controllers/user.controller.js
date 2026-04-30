@@ -2,6 +2,7 @@ import User from "../models/user.model.js"
 import RewardOrder from "../models/rewardOrder.model.js"
 import { applyStorePurchase, buildRewardsOverview, buildStoreCatalogForUser, getLevelFromXp, getStoreCatalogItemById, isPhysicalReward, normalizeRewardInventory } from "../utils/rewards.js"
 import Interview from "../models/interview.model.js"
+import { sendRewardClaimAdminEmail } from "../utils/sendEmail.js"
 
 const adminEmails = (process.env.ADMIN_EMAILS || "")
     .split(",")
@@ -48,6 +49,12 @@ const ensureDevToolsEnabled = (res) => {
 
     res.status(403).json({ message: "Dev test tools are disabled." })
     return false
+}
+
+const queueRewardClaimAdminEmail = ({ user, item, order = null, shippingAddress = null }) => {
+    sendRewardClaimAdminEmail({ user, item, order, shippingAddress }).catch((error) => {
+        console.error("Reward claim admin email failed:", error)
+    })
 }
 
 export const getCurrentUser = async (req,res) => {
@@ -126,6 +133,10 @@ export const purchaseStoreItem = async (req, res) => {
         }
 
         await user.save()
+        queueRewardClaimAdminEmail({
+            user,
+            item: purchaseResult.item
+        })
 
         const successMessage = purchaseResult.item.productType === "consumable"
             ? `${purchaseResult.item.title} redeemed and added to your inventory.`
@@ -195,6 +206,13 @@ export const claimMerchReward = async (req, res) => {
                     note: "Order placed from rewards store checkout."
                 }
             ]
+        })
+
+        queueRewardClaimAdminEmail({
+            user,
+            item: catalogItem,
+            order,
+            shippingAddress: address
         })
 
         return res.status(200).json({

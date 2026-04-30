@@ -10,6 +10,15 @@ const userSchema = new mongoose.Schema({
         unique:true,
         required:true
     },
+    passwordHash: {
+        type: String,
+        select: false
+    },
+    authProvider: {
+        type: String,
+        enum: ["GOOGLE", "EMAIL", "BOTH"],
+        default: "GOOGLE"
+    },
     role: {
         type: String,
         enum: ["USER", "ADMIN"],
