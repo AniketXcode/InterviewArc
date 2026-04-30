@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import Navbar from '../components/Navbar'
 import { useSelector } from 'react-redux'
 // eslint-disable-next-line no-unused-vars
@@ -26,6 +26,9 @@ import resumeImg from '../assets/resume.png'
 import pdfImg from '../assets/pdf.png'
 import analyticsImg from '../assets/history.png'
 import Footer from '../components/Footer'
+import Seo from '../components/Seo'
+import { getVariant } from '../utils/experiments'
+import { trackEvent } from '../utils/analytics'
 
 const stats = [
   { value: '24/7', label: 'On-demand mock interviews' },
@@ -108,12 +111,35 @@ const interviewModes = [
   }
 ]
 
+const testimonials = [
+  {
+    quote: 'The follow-up questions forced me to stop memorizing and start answering like a real candidate. My Amazon behavioral loop felt much less scary.',
+    name: 'Aarav Mehta',
+    role: 'SDE candidate',
+  },
+  {
+    quote: 'I used the reports after every mock and finally understood why my answers sounded vague. The next interview had much stronger examples.',
+    name: 'Priya Nair',
+    role: 'Product analyst',
+  },
+  {
+    quote: 'The technical mode helped me explain tradeoffs instead of silently solving. That made a huge difference in system design practice.',
+    name: 'Karan Shah',
+    role: 'Backend developer',
+  },
+]
+
+const companyLogos = ['Amazon', 'Google', 'Microsoft', 'Meta', 'Adobe', 'Flipkart']
+
 function Home() {
   const { userData } = useSelector((state) => state.user)
   const [showAuth, setShowAuth] = useState(false)
   const navigate = useNavigate()
+  const primaryCta = useMemo(() => getVariant('homeCta') || 'Start AI Interview', [])
 
   const handleProtectedNavigation = (path) => {
+    trackEvent('cta_clicked', { path, source: 'home' })
+
     if (!userData) {
       setShowAuth(true)
       return
@@ -123,7 +149,12 @@ function Home() {
   }
 
   return (
-    <div className='relative min-h-screen overflow-hidden bg-[#f4fbfb] text-slate-900'>
+    <div className='relative min-h-screen overflow-hidden bg-[#f4fbfb] text-slate-900 dark:bg-slate-950 dark:text-white'>
+      <Seo
+        title='AI Interview Prep'
+        description='Prepare for interviews with realistic AI mock interviews, adaptive follow-up questions, progress analytics, resume-aware prompts, and downloadable reports.'
+        keywords='AI interview prep, mock interview practice, Amazon interview preparation, technical interview practice, HR interview questions'
+      />
       <div className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.12),transparent_28%),radial-gradient(circle_at_top_right,rgba(43,218,237,0.16),transparent_32%),radial-gradient(circle_at_bottom,rgba(15,23,42,0.04),transparent_40%)]' />
       <div className='pointer-events-none absolute left-[-120px] top-32 h-72 w-72 rounded-full bg-emerald-300/20 blur-3xl' />
       <div className='pointer-events-none absolute right-[-120px] top-24 h-80 w-80 rounded-full bg-cyan-300/20 blur-3xl' />
@@ -146,7 +177,7 @@ function Home() {
                 </div>
 
                 <div className='space-y-5'>
-                  <h1 className='max-w-3xl text-3xl font-semibold leading-tight text-slate-900 sm:text-4xl md:text-6xl'>
+                  <h1 className='max-w-3xl text-3xl font-semibold leading-tight text-slate-900 dark:text-white sm:text-4xl md:text-6xl'>
                     Turn interview prep into a
                     <span className='mx-1.5 mt-2 inline-block rounded-[1.35rem] bg-gradient-to-r from-emerald-500 to-cyan-400 px-4 py-1.5 text-white shadow-lg shadow-cyan-200/60 sm:mx-2 sm:mt-0 sm:rounded-[2rem] sm:px-5'>
                       repeatable system
@@ -154,7 +185,7 @@ function Home() {
                     with InterviewArc
                   </h1>
 
-                  <p className='max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8'>
+                  <p className='max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg sm:leading-8'>
                     Practice realistic interviews, get adaptive follow-up questions, and review feedback that tells you what to improve before the next round matters.
                   </p>
                 </div>
@@ -166,7 +197,7 @@ function Home() {
                     whileTap={{ scale: 0.98 }}
                     className='inline-flex items-center justify-center gap-3 rounded-full bg-slate-950 px-7 py-4 text-sm font-medium text-white shadow-xl shadow-slate-900/10 transition hover:bg-slate-800'
                   >
-                    Start AI Interview
+                    {primaryCta}
                     <BsArrowRight size={18} />
                   </motion.button>
 
@@ -266,14 +297,44 @@ function Home() {
             </section>
 
             <section className='space-y-8 sm:space-y-10'>
+              <div className='grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-end'>
+                <div>
+                  <p className='mb-3 text-sm font-medium uppercase tracking-[0.26em] text-cyan-600 dark:text-cyan-300'>Social proof</p>
+                  <h2 className='text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl md:text-4xl'>
+                    12,000+ users prepared for interviews with InterviewArc
+                  </h2>
+                </div>
+                <div className='grid grid-cols-2 gap-3 sm:grid-cols-3'>
+                  {companyLogos.map((company) => (
+                    <div key={company} className='flex h-14 items-center justify-center rounded-2xl border border-slate-100 bg-white text-sm font-semibold text-slate-500 shadow-sm dark:border-white/10 dark:bg-slate-900 dark:text-slate-300'>
+                      {company}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className='grid gap-4 md:grid-cols-3'>
+                {testimonials.map((testimonial) => (
+                  <figure key={testimonial.name} className='rounded-[1.6rem] border border-white/80 bg-white/85 p-5 shadow-[0_20px_60px_-35px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-slate-900 sm:rounded-[2rem] sm:p-6'>
+                    <blockquote className='text-sm leading-7 text-slate-600 dark:text-slate-300'>"{testimonial.quote}"</blockquote>
+                    <figcaption className='mt-5 border-t border-slate-100 pt-4 dark:border-white/10'>
+                      <p className='text-sm font-semibold text-slate-900 dark:text-white'>{testimonial.name}</p>
+                      <p className='mt-1 text-xs uppercase tracking-[0.18em] text-slate-400'>{testimonial.role}</p>
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
+            </section>
+
+            <section className='space-y-8 sm:space-y-10'>
               <div className='flex flex-col items-start justify-between gap-6 md:flex-row md:items-end'>
                 <div className='max-w-2xl'>
                   <p className='mb-3 text-sm font-medium uppercase tracking-[0.26em] text-emerald-600'>How it works</p>
-                  <h2 className='text-2xl font-semibold text-slate-900 sm:text-3xl md:text-4xl'>
+                  <h2 className='text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl md:text-4xl'>
                     A cleaner prep loop from first question to final report
                   </h2>
                 </div>
-                <p className='max-w-xl text-sm leading-7 text-slate-500 sm:text-base'>
+                <p className='max-w-xl text-sm leading-7 text-slate-500 dark:text-slate-300 sm:text-base'>
                   The experience is designed to reduce guesswork, keep the session realistic, and make the feedback useful right away.
                 </p>
               </div>
@@ -286,7 +347,7 @@ function Home() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.2 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className='group rounded-[1.6rem] border border-white/80 bg-white/85 p-5 shadow-[0_20px_60px_-35px_rgba(15,23,42,0.35)] transition hover:-translate-y-1 hover:shadow-[0_30px_80px_-35px_rgba(15,23,42,0.45)] sm:rounded-[2rem] sm:p-7'
+                    className='group rounded-[1.6rem] border border-white/80 bg-white/85 p-5 shadow-[0_20px_60px_-35px_rgba(15,23,42,0.35)] transition hover:-translate-y-1 hover:shadow-[0_30px_80px_-35px_rgba(15,23,42,0.45)] dark:border-white/10 dark:bg-slate-900 sm:rounded-[2rem] sm:p-7'
                   >
                     <div className='flex items-center justify-between'>
                       <div className='rounded-2xl bg-gradient-to-br from-emerald-100 to-cyan-100 p-4 text-cyan-700'>
@@ -297,8 +358,8 @@ function Home() {
                       </span>
                     </div>
 
-                    <h3 className='mt-6 text-xl font-semibold text-slate-900 sm:mt-8 sm:text-2xl'>{item.title}</h3>
-                    <p className='mt-4 text-sm leading-7 text-slate-500'>{item.desc}</p>
+                    <h3 className='mt-6 text-xl font-semibold text-slate-900 dark:text-white sm:mt-8 sm:text-2xl'>{item.title}</h3>
+                    <p className='mt-4 text-sm leading-7 text-slate-500 dark:text-slate-300'>{item.desc}</p>
                   </motion.div>
                 ))}
               </div>

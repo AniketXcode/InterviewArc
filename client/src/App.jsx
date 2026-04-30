@@ -1,25 +1,31 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
-import Auth from "./pages/Auth";
 import { useEffect } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { setUserData } from "./redux/userSlice";
-import InterviewPage from "./pages/InterviewPage";
-import InterviewHistory from "./pages/InterviewHistory";
-import Pricing from "./pages/Pricing";
-import InterviewReport from "./pages/InterviewReport";
-import ResumeBuilder from "./pages/ResumeBuilder";
-import RewardsHub from "./pages/RewardsHub";
-import AdminRewardOrders from "./pages/AdminRewardOrders";
+import FeedbackWidget from "./components/FeedbackWidget";
 import { bootstrapAuthToken, persistAuthToken } from "./utils/authToken";
 // eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "motion/react";
 import { useLocation } from "react-router-dom";
 
-const ServerUrl =
-  import.meta.env.VITE_SERVER_URL?.trim() || "https://interviewarc.onrender.com";
+const Auth = lazy(() => import("./pages/Auth"));
+const InterviewPage = lazy(() => import("./pages/InterviewPage"));
+const InterviewHistory = lazy(() => import("./pages/InterviewHistory"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const InterviewReport = lazy(() => import("./pages/InterviewReport"));
+const ResumeBuilder = lazy(() => import("./pages/ResumeBuilder"));
+const RewardsHub = lazy(() => import("./pages/RewardsHub"));
+const AdminRewardOrders = lazy(() => import("./pages/AdminRewardOrders"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogArticle = lazy(() => import("./pages/BlogArticle"));
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const ServerUrl =
+  import.meta.env.VITE_SERVER_URL?.trim() ||
+  (import.meta.env.DEV ? "http://localhost:8000" : "https://interviewarc.onrender.com");
 
 bootstrapAuthToken();
 
@@ -47,82 +53,101 @@ function App() {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route
-          path="/"
-          element={
-            <PageWrapper>
-              <Home />
-            </PageWrapper>
-          }
-        />
-        <Route
-          path="/auth"
-          element={
-            <PageWrapper>
-              <Auth />
-            </PageWrapper>
-          }
-        />
-        <Route
-          path="/interview"
-          element={
-            <PageWrapper>
-              <InterviewPage />
-            </PageWrapper>
-          }
-        />
-        <Route
-          path="/history"
-          element={
-            <PageWrapper>
-              <InterviewHistory />
-            </PageWrapper>
-          }
-        />
-        <Route
-          path="/pricing"
-          element={
-            <PageWrapper>
-              <Pricing />
-            </PageWrapper>
-          }
-        />
-        <Route
-          path="/report/:id"
-          element={
-            <PageWrapper>
-              <InterviewReport />
-            </PageWrapper>
-          }
-        />
-        <Route
-          path="/resume-builder"
-          element={
-            <PageWrapper>
-              <ResumeBuilder />
-            </PageWrapper>
-          }
-        />
-        <Route
-          path="/rewards"
-          element={
-            <PageWrapper>
-              <RewardsHub />
-            </PageWrapper>
-          }
-        />
-        <Route
-          path="/admin/reward-orders"
-          element={
-            <PageWrapper>
-              <AdminRewardOrders />
-            </PageWrapper>
-          }
-        />
-      </Routes>
-    </AnimatePresence>
+    <>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route
+            path="/"
+            element={
+              <PageWrapper>
+                <Home />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/auth"
+            element={
+              <PageWrapper>
+                <Auth />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/interview"
+            element={
+              <PageWrapper>
+                <InterviewPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <PageWrapper>
+                <InterviewHistory />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/pricing"
+            element={
+              <PageWrapper>
+                <Pricing />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/report/:id"
+            element={
+              <PageWrapper>
+                <InterviewReport />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/resume-builder"
+            element={
+              <PageWrapper>
+                <ResumeBuilder />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/rewards"
+            element={
+              <PageWrapper>
+                <RewardsHub />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/resources"
+            element={
+              <PageWrapper>
+                <Blog />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/resources/:slug"
+            element={
+              <PageWrapper>
+                <BlogArticle />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/admin/reward-orders"
+            element={
+              <PageWrapper>
+                <AdminRewardOrders />
+              </PageWrapper>
+            }
+          />
+        </Routes>
+      </AnimatePresence>
+      <FeedbackWidget />
+    </>
   );
 }
 
@@ -133,7 +158,15 @@ const PageWrapper = ({ children }) => (
     exit={{ opacity: 0, scale: 0.98 }}
     transition={{ duration: 0.3 }}
   >
-    {children}
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#f4fbfb] text-sm font-medium text-slate-500 dark:bg-slate-950 dark:text-slate-300">
+          Loading InterviewArc...
+        </div>
+      }
+    >
+      {children}
+    </Suspense>
   </motion.div>
 );
 

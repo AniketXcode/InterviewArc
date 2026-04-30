@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { BsArrowRight, BsBarChart, BsCheck2Circle, BsRobot, BsStars } from 'react-icons/bs'
+import { BsArrowRight, BsBarChart, BsCheck2Circle, BsEnvelope, BsLock, BsPerson, BsRobot, BsStars } from 'react-icons/bs'
 import { IoSparkles } from 'react-icons/io5'
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'motion/react'
@@ -25,6 +25,8 @@ function Auth({ isModel = false }) {
   const { userData } = useSelector((state) => state.user)
   const [isLoading, setIsLoading] = useState(false)
   const [authError, setAuthError] = useState('')
+  const [authMode, setAuthMode] = useState('login')
+  const [manualForm, setManualForm] = useState({ name: '', email: '', password: '' })
 
   useEffect(() => {
     if (!isModel && userData) {
@@ -66,6 +68,124 @@ function Auth({ isModel = false }) {
     }
   }
 
+  const handleManualChange = (event) => {
+    const { name, value } = event.target
+    setManualForm((current) => ({ ...current, [name]: value }))
+  }
+
+  const handleManualAuth = async (event) => {
+    event.preventDefault()
+
+    try {
+      setIsLoading(true)
+      setAuthError('')
+
+      const endpoint = authMode === 'signup' ? '/api/auth/signup' : '/api/auth/login'
+      const payload =
+        authMode === 'signup'
+          ? manualForm
+          : { email: manualForm.email, password: manualForm.password }
+
+      const result = await axios.post(ServerUrl + endpoint, payload, { withCredentials: true })
+      const { token = '', ...userPayload } = result.data || {}
+      persistAuthToken(token)
+      dispatch(setUserData(userPayload))
+
+      if (!isModel) {
+        navigate('/', { replace: true })
+      }
+    } catch (error) {
+      console.log(error)
+      persistAuthToken('')
+      dispatch(setUserData(null))
+      setAuthError(error?.response?.data?.message || 'Email authentication failed. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const manualAuthForm = (
+    <form onSubmit={handleManualAuth} className='space-y-3'>
+      <div className='grid grid-cols-2 rounded-full bg-slate-100 p-1 text-sm font-medium text-slate-500'>
+        <button
+          type='button'
+          onClick={() => {
+            setAuthMode('login')
+            setAuthError('')
+          }}
+          className={`rounded-full px-4 py-2 transition ${authMode === 'login' ? 'bg-white text-slate-950 shadow-sm' : 'hover:text-slate-800'}`}
+        >
+          Login
+        </button>
+        <button
+          type='button'
+          onClick={() => {
+            setAuthMode('signup')
+            setAuthError('')
+          }}
+          className={`rounded-full px-4 py-2 transition ${authMode === 'signup' ? 'bg-white text-slate-950 shadow-sm' : 'hover:text-slate-800'}`}
+        >
+          Sign up
+        </button>
+      </div>
+
+      {authMode === 'signup' && (
+        <label className='relative block'>
+          <BsPerson className='pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400' size={16} />
+          <input
+            name='name'
+            value={manualForm.name}
+            onChange={handleManualChange}
+            className='w-full rounded-full border border-slate-200 bg-white px-11 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-300 focus:ring-4 focus:ring-cyan-100'
+            placeholder='Full name'
+            autoComplete='name'
+            required={authMode === 'signup'}
+          />
+        </label>
+      )}
+
+      <label className='relative block'>
+        <BsEnvelope className='pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400' size={16} />
+        <input
+          type='email'
+          name='email'
+          value={manualForm.email}
+          onChange={handleManualChange}
+          className='w-full rounded-full border border-slate-200 bg-white px-11 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-300 focus:ring-4 focus:ring-cyan-100'
+          placeholder='Email address'
+          autoComplete='email'
+          required
+        />
+      </label>
+
+      <label className='relative block'>
+        <BsLock className='pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400' size={16} />
+        <input
+          type='password'
+          name='password'
+          value={manualForm.password}
+          onChange={handleManualChange}
+          className='w-full rounded-full border border-slate-200 bg-white px-11 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-300 focus:ring-4 focus:ring-cyan-100'
+          placeholder='Password'
+          autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'}
+          minLength={6}
+          required
+        />
+      </label>
+
+      <motion.button
+        type='submit'
+        disabled={isLoading}
+        whileHover={{ scale: isLoading ? 1 : 1.02 }}
+        whileTap={{ scale: isLoading ? 1 : 0.98 }}
+        className='flex w-full items-center justify-center gap-3 rounded-full bg-slate-950 px-5 py-3.5 text-sm font-medium text-white shadow-lg transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70'
+      >
+        {isLoading ? 'Please wait...' : authMode === 'signup' ? 'Create account' : 'Login with email'}
+        <BsArrowRight size={16} />
+      </motion.button>
+    </form>
+  )
+
   if (isModel) {
     return (
       <div className='w-full py-4'>
@@ -99,6 +219,14 @@ function Auth({ isModel = false }) {
               </div>
             </div>
 
+            {manualAuthForm}
+
+            <div className='my-5 flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-slate-400'>
+              <span className='h-px flex-1 bg-slate-100' />
+              or
+              <span className='h-px flex-1 bg-slate-100' />
+            </div>
+
             <motion.button
               onClick={handleGoogleAuth}
               disabled={isLoading}
@@ -113,7 +241,7 @@ function Auth({ isModel = false }) {
             {authError && <p className='mt-4 text-center text-sm text-red-500'>{authError}</p>}
 
             <p className='mt-5 text-center text-xs leading-5 text-slate-400'>
-              Secure authentication powered by Google.
+              Secure authentication with email or Google.
             </p>
           </div>
         </motion.div>
@@ -228,6 +356,14 @@ function Auth({ isModel = false }) {
                 </div>
               </div>
 
+              {manualAuthForm}
+
+              <div className='my-6 flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-slate-400'>
+                <span className='h-px flex-1 bg-slate-100' />
+                or
+                <span className='h-px flex-1 bg-slate-100' />
+              </div>
+
               <motion.button
                 onClick={handleGoogleAuth}
                 disabled={isLoading}
@@ -242,7 +378,7 @@ function Auth({ isModel = false }) {
               {authError && <p className='mt-4 text-center text-sm text-red-500'>{authError}</p>}
 
               <p className='mt-5 text-center text-xs leading-6 text-slate-400'>
-                Secure sign-in powered by Google. Your progress stays tied to your account.
+                Secure sign-in with email or Google. Your progress stays tied to your account.
               </p>
             </div>
           </div>

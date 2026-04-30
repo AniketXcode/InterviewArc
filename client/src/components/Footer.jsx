@@ -48,6 +48,17 @@ function Footer() {
               </div>
               <BsBarChart className='text-cyan-600' size={18} />
             </button>
+
+            <button
+              onClick={() => navigate('/resources')}
+              className='flex items-center justify-between rounded-[1.5rem] border border-slate-100 bg-gradient-to-br from-slate-50 to-white px-4 py-4 text-left transition hover:shadow-md dark:border-white/10 dark:from-slate-800 dark:to-slate-900'
+            >
+              <div>
+                <p className='text-sm font-semibold text-slate-900 dark:text-white'>Read Guides</p>
+                <p className='mt-1 text-xs leading-5 text-slate-500 dark:text-slate-300'>SEO interview resources</p>
+              </div>
+              <BsArrowUpRight className='text-slate-500 dark:text-slate-300' size={18} />
+            </button>
           </div>
         </div>
 

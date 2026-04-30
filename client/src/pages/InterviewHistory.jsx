@@ -111,14 +111,6 @@ function InterviewHistory() {
       ) / completedInterviews.length
     ).toFixed(1)
     : '0.0'
-  const latestInterviewDate = interviews[0]?.createdAt
-    ? new Date(interviews[0].createdAt).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    })
-    : 'No sessions yet'
-
   const lineChartData = [...completedInterviews].reverse().map((item, index) => ({
     name: `Int ${index + 1}`,
     score: Number(item.finalScore?.toFixed(1) || 0)

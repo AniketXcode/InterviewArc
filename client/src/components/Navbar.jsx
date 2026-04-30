@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'motion/react'
-import { BsChevronRight, BsCoin, BsGift, BsGraphUpArrow, BsRobot } from 'react-icons/bs'
+import { BsBook, BsChevronRight, BsCoin, BsGift, BsGraphUpArrow, BsMoonStars, BsRobot, BsSun } from 'react-icons/bs'
 import { HiOutlineLogout } from 'react-icons/hi'
 import { FaUserAstronaut } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
@@ -11,6 +11,7 @@ import { ServerUrl } from '../App'
 import { setUserData } from '../redux/userSlice'
 import AuthModel from './AuthModel'
 import { persistAuthToken } from '../utils/authToken'
+import { useTheme } from '../context/ThemeContext'
 
 function Navbar() {
   const { userData } = useSelector((state) => state.user)
@@ -20,6 +21,7 @@ function Navbar() {
 
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const { theme, toggleTheme } = useTheme()
 
   const handleLogout = async () => {
     try {
@@ -52,7 +54,7 @@ function Navbar() {
         initial={{ opacity: 0, y: -28 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className='mx-auto flex w-full max-w-6xl items-center justify-between gap-3 rounded-[1.35rem] border border-white/70 bg-white/78 px-3 py-3 shadow-[0_18px_55px_-30px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:rounded-[1.7rem] sm:px-4 md:px-6'
+        className='mx-auto flex w-full max-w-6xl items-center justify-between gap-3 rounded-[1.35rem] border border-white/70 bg-white/78 px-3 py-3 shadow-[0_18px_55px_-30px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/82 sm:rounded-[1.7rem] sm:px-4 md:px-6'
       >
         <div onClick={() => navigate('/')} className='flex cursor-pointer items-center gap-3'>
           <div className='rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-400 p-2.5 text-white shadow-lg shadow-cyan-200/60 sm:p-3'>
@@ -142,6 +144,14 @@ function Navbar() {
           </div>
 
           <button
+            onClick={() => navigate('/resources')}
+            className='hidden items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:border-cyan-200 hover:text-slate-900 dark:border-white/10 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:text-white lg:inline-flex'
+          >
+            <BsBook size={15} />
+            Resources
+          </button>
+
+          <button
             onClick={() => handleProtectedAction(() => navigate('/history'))}
             className='hidden items-center gap-2 rounded-full border border-slate-200 bg-white/80 dark:border-white/10 dark:bg-slate-800/80 dark:text-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:border-cyan-200 hover:text-slate-900 dark:hover:text-white md:inline-flex'
           >
@@ -155,6 +165,15 @@ function Navbar() {
           >
             <BsGift size={15} />
             Rewards
+          </button>
+
+          <button
+            onClick={toggleTheme}
+            className='inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-600 transition hover:border-cyan-200 hover:text-slate-900 dark:border-white/10 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:text-white'
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          >
+            {theme === 'dark' ? <BsSun size={16} /> : <BsMoonStars size={16} />}
           </button>
 
           <div className='relative'>
