@@ -71,13 +71,6 @@ const consumableLabels = {
   streakShields: 'Streak shields'
 }
 
-const previewStyles = {
-  legendary: 'from-amber-400 via-orange-400 to-rose-400 text-white',
-  epic: 'from-slate-900 via-slate-800 to-cyan-900 text-white',
-  rare: 'from-cyan-500 via-emerald-500 to-teal-500 text-white',
-  common: 'from-slate-700 via-slate-600 to-slate-500 text-white'
-}
-
 const categoryAccents = {
   Consumables: 'border-cyan-100 bg-cyan-50 text-cyan-700',
   'Interview Packs': 'border-emerald-100 bg-emerald-50 text-emerald-700',
@@ -553,30 +546,35 @@ function RewardsHub() {
               return (
                 <div
                   key={item.id}
-                  className='overflow-hidden rounded-[1.3rem] border border-slate-100 bg-white shadow-[0_18px_45px_-35px_rgba(15,23,42,0.45)] sm:rounded-[1.6rem]'
+                  className='overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-slate-900'
                 >
-                  <div className={`relative overflow-hidden bg-gradient-to-br ${previewStyles[item.rarity] || previewStyles.common}`}>
-                    {productImage && (
-                      <img
-                        src={productImage}
-                        alt={item.title}
-                        className='h-56 w-full object-cover object-center opacity-90'
-                      />
-                    )}
-                    <div className='absolute inset-0 bg-gradient-to-t from-slate-950/88 via-slate-900/35 to-transparent' />
-                    <div className='absolute inset-x-0 top-0 flex items-start justify-between gap-4 p-4 sm:p-5'>
-                      <div className='rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs uppercase tracking-[0.14em]'>
-                        {item.previewLabel}
+                  <div className='border-b border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-slate-950 sm:p-5'>
+                    <div className='flex items-start justify-between gap-4'>
+                      <div>
+                        <div className='inline-flex rounded-md border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-medium uppercase tracking-[0.12em] text-teal-700 dark:border-teal-500/30 dark:bg-teal-500/10 dark:text-teal-300'>
+                          {item.previewLabel}
+                        </div>
+                        <h3 className='mt-4 text-xl font-semibold leading-tight text-slate-950 dark:text-white'>
+                          {item.title}
+                        </h3>
+                        <p className='mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300'>
+                          {item.previewText}
+                        </p>
                       </div>
-                      <div className='rounded-full bg-white/10 px-3 py-1.5 text-xs uppercase tracking-[0.14em]'>
+                      <div className='rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium uppercase tracking-[0.12em] text-slate-600 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300'>
                         {item.rarity}
                       </div>
                     </div>
 
-                    <div className='absolute inset-x-0 bottom-0 p-4 sm:p-5'>
-                      <p className='text-2xl font-semibold leading-tight text-white sm:text-3xl'>{item.title}</p>
-                      <p className='mt-3 max-w-xs text-sm leading-6 text-white/80'>{item.previewText}</p>
-                    </div>
+                    {productImage && (
+                      <div className='mt-5 flex h-32 items-center justify-center rounded-lg border border-slate-200 bg-white dark:border-white/10 dark:bg-slate-900'>
+                        <img
+                          src={productImage}
+                          alt={item.title}
+                          className='h-24 w-24 object-contain'
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className='space-y-4 p-4 sm:space-y-5 sm:p-5'>

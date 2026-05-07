@@ -230,12 +230,12 @@ function Pricing() {
                       </p>
                     </div>
 
-                    <div className='rounded-[1.5rem] bg-gradient-to-br from-emerald-400 to-cyan-400 p-5 text-slate-950'>
-                      <p className='text-sm font-medium'>Recommended today</p>
+                    <div className='rounded-lg border border-teal-200 bg-teal-50 p-5 text-slate-950 dark:border-teal-500/30 dark:bg-teal-500/10 dark:text-white'>
+                      <p className='text-sm font-medium text-teal-700 dark:text-teal-300'>Recommended today</p>
                       <p className='mt-2 text-2xl font-semibold'>
                         {plans.find((plan) => plan.id === selectedPlan)?.name}
                       </p>
-                      <p className='mt-2 text-sm leading-6 text-slate-800'>
+                      <p className='mt-2 text-sm leading-6 text-slate-700 dark:text-slate-300'>
                         Selected plan gives you {plans.find((plan) => plan.id === selectedPlan)?.credits} credits for your next prep cycle.
                       </p>
                     </div>

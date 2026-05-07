@@ -6,12 +6,59 @@ export const getVapiRuntimeConfig = () => ({
   useExistingAssistant: readEnv('VITE_VAPI_USE_EXISTING_ASSISTANT') === 'true',
   voiceProvider: readEnv('VITE_VAPI_VOICE_PROVIDER') || 'vapi',
   voiceId: readEnv('VITE_VAPI_VOICE_ID') || 'Elliot',
+  voiceGender: readEnv('VITE_VAPI_VOICE_GENDER'),
   transcriberProvider: readEnv('VITE_VAPI_TRANSCRIBER_PROVIDER') || 'deepgram',
   transcriberModel: readEnv('VITE_VAPI_TRANSCRIBER_MODEL') || 'nova-2',
   transcriberLanguage: readEnv('VITE_VAPI_TRANSCRIBER_LANGUAGE'),
   modelProvider: readEnv('VITE_VAPI_MODEL_PROVIDER') || 'openai',
   modelName: readEnv('VITE_VAPI_MODEL_NAME') || 'gpt-4.1-mini'
 })
+
+export const getVapiVoiceGender = (config = getVapiRuntimeConfig()) => {
+  const explicitGender = config.voiceGender?.toLowerCase()
+
+  if (explicitGender === 'male' || explicitGender === 'female') {
+    return explicitGender
+  }
+
+  const voiceIdentity = `${config.voiceProvider || ''} ${config.voiceId || ''}`.toLowerCase()
+  const maleVoiceHints = [
+    'elliot',
+    'cole',
+    'harry',
+    'paul',
+    'mark',
+    'david',
+    'josh',
+    'adam',
+    'antoni',
+    'arnold',
+    'sam',
+    'matthew'
+  ]
+  const femaleVoiceHints = [
+    'jennifer',
+    'emily',
+    'sarah',
+    'sara',
+    'jenny',
+    'aria',
+    'bella',
+    'rachel',
+    'domi',
+    'elli'
+  ]
+
+  if (maleVoiceHints.some((hint) => voiceIdentity.includes(hint))) {
+    return 'male'
+  }
+
+  if (femaleVoiceHints.some((hint) => voiceIdentity.includes(hint))) {
+    return 'female'
+  }
+
+  return 'female'
+}
 
 export const createInterviewVapiAssistant = () => {
   const config = getVapiRuntimeConfig()

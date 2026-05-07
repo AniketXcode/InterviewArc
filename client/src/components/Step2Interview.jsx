@@ -27,6 +27,7 @@ import {
 } from '../utils/tavus'
 import {
   createInterviewVapiAssistant,
+  getVapiVoiceGender,
   getVapiRuntimeConfig
 } from '../utils/vapi'
 import {
@@ -107,7 +108,7 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
   const [isFinishing, setIsFinishing] = useState(false)
   const [isAutoAdvancing, setIsAutoAdvancing] = useState(false)
   const [autoAdvanceCountdown, setAutoAdvanceCountdown] = useState(null)
-  const [voiceGender, setVoiceGender] = useState('female')
+  const [voiceGender, setVoiceGender] = useState(() => getVapiVoiceGender())
   const [subtitle, setSubtitle] = useState('')
   const [micSupported, setMicSupported] = useState(true)
   const [submissionError, setSubmissionError] = useState('')
@@ -149,6 +150,7 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
   const videoSource = voiceGender === 'male' ? maleVideo : femaleVideo
   const tavusConfig = getTavusRuntimeConfig()
   const vapiConfig = getVapiRuntimeConfig()
+  const vapiVoiceGender = getVapiVoiceGender(vapiConfig)
   const headTtsConfig = getHeadTtsRuntimeConfig()
   const headTtsPreloadVoicesKey = headTtsConfig.preloadVoices.join('|')
   const speechRecognitionLanguage =
@@ -191,6 +193,8 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
     ? ((currentIndex + (feedback ? 1 : 0)) / questions.length) * 100
     : 0
   const answerWordCount = answer.trim() ? answer.trim().split(/\s+/).length : 0
+  const safeTimeLeft = Math.max(0, timeLeft)
+  const compactTimeLeft = `${String(Math.floor(safeTimeLeft / 60)).padStart(2, '0')}:${String(safeTimeLeft % 60).padStart(2, '0')}`
   const voiceEngineLabel = shouldUseTavus
     ? 'Tavus live avatar'
     : shouldUseElevenLabs
@@ -460,6 +464,12 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
     stopActiveElevenLabsAudio()
     teardownHeadTts()
   }, [interviewId])
+
+  useEffect(() => {
+    if (shouldUseVapi) {
+      setVoiceGender(vapiVoiceGender)
+    }
+  }, [shouldUseVapi, vapiVoiceGender])
 
   useEffect(() => {
     isAIPlayingRef.current = isAIPlaying
@@ -1494,25 +1504,25 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
 
   return (
     <div className={wrapperClass}>
-      <div className='grid gap-4 lg:gap-6 xl:grid-cols-[0.9fr_1.1fr]'>
-        <div className='space-y-4 sm:space-y-5'>
-          <div className='overflow-hidden rounded-[1.75rem] border border-slate-900/70 bg-[linear-gradient(180deg,#020617_0%,#0b1120_100%)] text-white shadow-[0_34px_110px_-45px_rgba(15,23,42,0.8)] sm:rounded-[2.2rem]'>
-            <div className='border-b border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(45,212,191,0.14),transparent_28%)] px-4 py-4 sm:px-6 sm:py-5'>
+      <div className='grid gap-3 lg:gap-6 xl:grid-cols-[0.9fr_1.1fr]'>
+        <div className='space-y-3 sm:space-y-5'>
+          <div className='overflow-hidden rounded-lg border border-slate-200 bg-white text-slate-950 shadow-sm dark:border-white/10 dark:bg-slate-950 dark:text-white'>
+            <div className='border-b border-slate-200 bg-white px-3.5 py-3.5 dark:border-white/10 dark:bg-slate-950 sm:px-6 sm:py-5'>
               <div className='flex flex-wrap items-center justify-between gap-3'>
                 <div>
-                  <p className='text-xs uppercase tracking-[0.24em] text-emerald-300'>AI interviewer</p>
-                  <h2 className='mt-2 text-xl font-semibold tracking-tight sm:text-2xl'>Live interview in progress</h2>
+                  <p className='text-[11px] uppercase tracking-[0.22em] text-teal-700 dark:text-teal-300 sm:text-xs'>AI interviewer</p>
+                  <h2 className='mt-1.5 text-lg font-semibold tracking-tight sm:mt-2 sm:text-2xl'>Live interview in progress</h2>
                 </div>
 
-                <div className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] text-slate-300 sm:text-xs'>
-                  <span className={`h-2 w-2 rounded-full ${isAIPlaying ? 'bg-emerald-300 shadow-[0_0_18px_rgba(110,231,183,0.9)]' : 'bg-sky-300 shadow-[0_0_18px_rgba(125,211,252,0.7)]'}`} />
+                <div className='inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[10px] uppercase tracking-[0.12em] text-slate-600 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300 sm:px-3 sm:text-xs'>
+                  <span className={`h-2 w-2 rounded-full ${isAIPlaying ? 'bg-teal-500' : 'bg-slate-400'}`} />
                   {isAIPlaying ? 'AI speaking' : isMicOn ? 'Listening mode' : 'Mic paused'}
                 </div>
               </div>
             </div>
 
-            <div className='p-4 sm:p-6'>
-              <div className='overflow-hidden rounded-[1.35rem] border border-white/10 bg-black shadow-[0_25px_60px_-30px_rgba(0,0,0,0.8)] sm:rounded-[1.9rem]'>
+            <div className='p-3.5 sm:p-6'>
+              <div className='overflow-hidden rounded-lg border border-slate-200 bg-black dark:border-white/10'>
                 {shouldUseTavus ? (
                   <div className='relative aspect-video w-full bg-slate-950'>
                     <video
@@ -1551,28 +1561,28 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
                 )}
               </div>
 
-              <div className='mt-4 rounded-[1.3rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.38),rgba(15,23,42,0.72))] p-3.5 sm:mt-5 sm:rounded-[1.65rem] sm:p-4'>
-                <div className='flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-slate-400 sm:text-[11px]'>
-                  <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1.5 sm:px-3'>
+              <div className='mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-slate-900 sm:mt-5 sm:p-4'>
+                <div className='-mx-0.5 flex snap-x items-center gap-2 overflow-x-auto px-0.5 pb-1 text-[10px] uppercase tracking-[0.14em] text-slate-500 sm:flex-wrap sm:overflow-visible sm:pb-0 sm:text-[11px]'>
+                  <span className='inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 dark:border-white/10 dark:bg-slate-950 sm:px-3'>
                     <BsCameraVideo size={12} />
                     {voiceEngineLabel}
                   </span>
-                  <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1.5 sm:px-3'>
+                  <span className='inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 dark:border-white/10 dark:bg-slate-950 sm:px-3'>
                     <BsBroadcast size={12} />
                     {role || 'Interview session'}
                   </span>
-                  <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1.5 sm:px-3'>
+                  <span className='inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 dark:border-white/10 dark:bg-slate-950 sm:px-3'>
                     <BsSoundwave size={12} />
                     {mode || 'Guided round'}
                   </span>
                 </div>
 
-                <div className='mt-3 rounded-[1.15rem] border border-white/10 bg-black/20 p-3.5 sm:mt-4 sm:rounded-[1.4rem] sm:p-4'>
-                  <div className='flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-emerald-300 sm:text-[11px]'>
+                <div className='mt-2.5 rounded-lg border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-950 sm:mt-4 sm:p-4'>
+                  <div className='flex items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-teal-700 dark:text-teal-300 sm:text-[11px]'>
                     <BsChatQuote size={12} />
                     Live caption
                   </div>
-                  <p className='mt-3 text-sm leading-6 text-slate-100 sm:leading-7'>
+                  <p className='mt-2 text-xs leading-5 text-slate-700 dark:text-slate-300 sm:mt-3 sm:text-sm sm:leading-7'>
                     {subtitle ||
                       (shouldUseVapi && !isVapiSessionReady
                         ? 'Connecting the Vapi voice agent. The first question will start as soon as it is ready.'
@@ -1583,11 +1593,26 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
                             : 'The AI interviewer will speak here. Once the question is asked, answer naturally by voice, typing, or both.')}
                   </p>
                 </div>
+
+                <div className='mt-3 grid grid-cols-3 gap-2 sm:hidden'>
+                  <div className='rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-slate-950'>
+                    <p className='text-[10px] uppercase tracking-[0.12em] text-slate-500'>Question</p>
+                    <p className='mt-1 text-base font-semibold text-slate-950 dark:text-white'>{Math.min(currentIndex + 1, questions.length)}/{questions.length}</p>
+                  </div>
+                  <div className='rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-slate-950'>
+                    <p className='text-[10px] uppercase tracking-[0.12em] text-slate-500'>Time</p>
+                    <p className='mt-1 text-base font-semibold text-teal-700 dark:text-teal-300'>{compactTimeLeft}</p>
+                  </div>
+                  <div className='rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-slate-950'>
+                    <p className='text-[10px] uppercase tracking-[0.12em] text-slate-500'>Words</p>
+                    <p className='mt-1 text-base font-semibold text-slate-950 dark:text-white'>{answerWordCount}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4'>
+          <div className='hidden grid-cols-2 gap-3 sm:grid sm:grid-cols-3 sm:gap-4'>
             <div className='rounded-[1.45rem] border border-white/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.9))] p-4 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.45)] backdrop-blur sm:rounded-[1.8rem] sm:p-5'>
               <p className='text-sm text-slate-500'>Current question</p>
               <p className='mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl'>
@@ -1609,14 +1634,14 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
           </div>
         </div>
 
-        <div className='rounded-[1.75rem] border border-white/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,250,252,0.88))] p-4 shadow-[0_26px_80px_-45px_rgba(15,23,42,0.4)] backdrop-blur sm:rounded-[2.15rem] sm:p-5 md:p-7'>
-          <div className='flex flex-col gap-4 border-b border-slate-100 pb-5 sm:pb-6'>
+        <div className='rounded-lg border border-slate-200 bg-white p-3.5 shadow-sm dark:border-white/10 dark:bg-slate-900 sm:p-5 md:p-7'>
+          <div className='flex flex-col gap-3 border-b border-slate-100 pb-4 sm:gap-4 sm:pb-6'>
             <div className='flex flex-wrap items-center justify-between gap-3'>
               <div>
-                <p className='text-xs font-medium uppercase tracking-[0.24em] text-teal-700 sm:text-sm'>
+                <p className='text-[11px] font-medium uppercase tracking-[0.22em] text-teal-700 sm:text-sm'>
                   {isIntroPhase ? 'Introduction' : `Question ${currentIndex + 1}`}
                 </p>
-                <h2 className='mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl'>
+                <h2 className='mt-1.5 text-xl font-semibold tracking-tight text-slate-900 sm:mt-2 sm:text-3xl'>
                   {isIntroPhase ? `Welcome, ${userName || 'candidate'}` : 'Respond with clarity and structure'}
                 </h2>
               </div>
@@ -1634,9 +1659,9 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
             </div>
 
             <div>
-              <div className='h-2 overflow-hidden rounded-full bg-slate-100'>
-                <div
-                  className='h-full rounded-full bg-gradient-to-r from-teal-600 via-emerald-500 to-sky-400 transition-all duration-500'
+                <div className='h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800'>
+                  <div
+                  className='h-full rounded-full bg-teal-600 transition-all duration-500'
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -1663,14 +1688,14 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
             </div>
           ) : (
             <>
-              <div className='mt-5 rounded-[1.35rem] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(248,250,252,0.96),rgba(241,245,249,0.82))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] sm:mt-6 sm:rounded-[1.85rem] sm:p-5'>
+              <div className='mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3.5 dark:border-white/10 dark:bg-slate-950 sm:mt-6 sm:p-5'>
                 {isIntroPhase ? (
                   <div>
-                    <div className='inline-flex items-center gap-2 rounded-full border border-white bg-white px-3 py-1.5 text-xs font-medium uppercase tracking-[0.14em] text-slate-500 shadow-sm'>
+                    <div className='inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-slate-900'>
                       <BsStars size={13} />
                       Getting started
                     </div>
-                    <p className='mt-4 text-sm leading-7 text-slate-600 sm:text-base sm:leading-8'>
+                    <p className='mt-3 text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-8'>
                       The AI interviewer is introducing the session. Listen first, then your first question will appear here and the timer will begin.
                     </p>
                   </div>
@@ -1684,11 +1709,11 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
                 )}
               </div>
 
-              <div className='mt-5 rounded-[1.35rem] border border-slate-200/80 bg-white/88 p-3.5 shadow-[0_18px_45px_-40px_rgba(15,23,42,0.35)] sm:mt-6 sm:rounded-[1.85rem] sm:p-4'>
-                <div className='mb-4 flex flex-col gap-3 px-1 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between'>
+              <div className='mt-4 rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-slate-950 sm:mt-6 sm:p-4'>
+                <div className='mb-3 flex flex-col gap-2 px-1 sm:mb-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between'>
                   <div>
                     <p className='text-xs uppercase tracking-[0.18em] text-slate-400'>Response area</p>
-                    <p className='mt-1 text-sm text-slate-500'>Type, speak, or combine both for a more natural answer.</p>
+                    <p className='mt-1 text-xs leading-5 text-slate-500 sm:text-sm'>Type, speak, or combine both for a more natural answer.</p>
                   </div>
                   <div className='inline-flex w-fit items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-slate-500'>
                     <BsSoundwave size={12} />
@@ -1705,7 +1730,7 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
                   onChange={(e) => setAnswer(e.target.value)}
                   value={answer}
                   disabled={isIntroPhase}
-                  className='min-h-[220px] w-full resize-none rounded-[1.3rem] border border-slate-200 bg-[linear-gradient(180deg,rgba(248,250,252,0.95),rgba(255,255,255,0.98))] p-4 text-sm text-slate-800 outline-none transition focus:border-teal-300 focus:bg-white disabled:cursor-not-allowed disabled:opacity-70 sm:min-h-[260px] sm:rounded-[1.7rem] sm:p-5 sm:text-base'
+                  className='min-h-[160px] w-full resize-none rounded-lg border border-slate-200 bg-white p-3.5 text-sm text-slate-800 outline-none transition focus:border-teal-300 disabled:cursor-not-allowed disabled:opacity-70 dark:border-white/10 dark:bg-slate-900 dark:text-white sm:min-h-[260px] sm:p-5 sm:text-base'
                 />
 
                 <div className='mt-3 flex flex-col gap-3 text-sm text-slate-500 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between'>
@@ -1745,7 +1770,7 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
                     onClick={toggleMic}
                     disabled={!micSupported || isIntroPhase}
                     whileTap={{ scale: !micSupported || isIntroPhase ? 1 : 0.96 }}
-                    className='inline-flex h-[52px] w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white px-5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-teal-200 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60 sm:h-14 sm:w-auto'
+                    className='inline-flex h-[52px] w-full items-center justify-center gap-3 rounded-md border border-slate-200 bg-white px-5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-teal-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-slate-950 dark:text-slate-200 sm:h-14 sm:w-auto'
                   >
                     {isMicOn ? <FaMicrophone size={18} /> : <FaMicrophoneSlash size={18} />}
                     {isMicOn ? 'Mute mic' : 'Enable mic'}
@@ -1755,7 +1780,7 @@ function Step2Interview({ interviewData, onFinish, isEmbedded = false }) {
                     onClick={submitAnswer}
                     disabled={isSubmitting || isIntroPhase}
                     whileTap={{ scale: isSubmitting || isIntroPhase ? 1 : 0.98 }}
-                    className='w-full flex-1 rounded-full bg-gradient-to-r from-slate-950 via-slate-900 to-teal-950 px-6 py-4 text-sm font-medium text-white shadow-lg shadow-slate-900/10 transition hover:from-slate-900 hover:to-teal-900 disabled:cursor-not-allowed disabled:bg-slate-300'
+                    className='w-full flex-1 rounded-md bg-teal-600 px-6 py-4 text-sm font-medium text-white shadow-sm transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-300'
                   >
                     {isSubmitting ? 'Submitting answer...' : 'Submit answer'}
                   </motion.button>

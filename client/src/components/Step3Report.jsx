@@ -49,7 +49,7 @@ function Step3Report({
   if (!report) {
     return (
       <div className={isEmbedded ? 'w-full' : 'min-h-screen flex items-center justify-center px-4 py-10'}>
-        <div className='rounded-[2rem] border border-white/80 bg-white/86 px-8 py-10 text-center shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)] backdrop-blur'>
+        <div className='rounded-lg border border-slate-200 bg-white px-8 py-10 text-center shadow-sm dark:border-white/10 dark:bg-slate-900'>
           <p className='text-lg font-medium text-slate-700'>Loading report...</p>
         </div>
       </div>
@@ -298,7 +298,7 @@ function Step3Report({
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className='rounded-[2rem] border border-amber-100 bg-amber-50/80 p-7 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)]'
+              className='rounded-lg border border-slate-200 bg-white p-7 shadow-sm dark:border-white/10 dark:bg-slate-900'
               >
                 <div className='flex items-center gap-3'>
                   <div className='rounded-full bg-white p-2 text-amber-600 shadow-sm'>
@@ -339,7 +339,7 @@ function Step3Report({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className='rounded-[2rem] border border-white/80 bg-white/86 p-7 text-center shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)] backdrop-blur'
+              className='rounded-lg border border-slate-200 bg-white p-7 text-center shadow-sm dark:border-white/10 dark:bg-slate-900'
             >
               <h3 className='text-sm uppercase tracking-[0.18em] text-slate-400'>
                 Overall performance
@@ -365,7 +365,7 @@ function Step3Report({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className='rounded-[2rem] border border-white/80 bg-white/86 p-7 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)] backdrop-blur'
+              className='rounded-lg border border-slate-200 bg-white p-7 shadow-sm dark:border-white/10 dark:bg-slate-900'
             >
               <h3 className='text-lg font-semibold text-slate-900'>Skill evaluation</h3>
 
@@ -379,7 +379,7 @@ function Step3Report({
 
                     <div className='h-3 rounded-full bg-slate-100'>
                       <div
-                        className='h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-400'
+                        className='h-full rounded-full bg-teal-600'
                         style={{ width: `${skill.value * 10}%` }}
                       />
                     </div>
@@ -391,7 +391,7 @@ function Step3Report({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className='rounded-[2rem] border border-emerald-100 bg-emerald-50/70 p-7 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)]'
+              className='rounded-lg border border-teal-200 bg-teal-50 p-7 shadow-sm dark:border-teal-500/30 dark:bg-teal-500/10'
             >
               <div className='flex items-start gap-3'>
                 <div className='rounded-full bg-white p-2 text-emerald-600 shadow-sm'>
@@ -408,7 +408,7 @@ function Step3Report({
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className='rounded-[2rem] border border-cyan-100 bg-cyan-50/80 p-7 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)]'
+                className='rounded-lg border border-teal-200 bg-teal-50 p-7 shadow-sm dark:border-teal-500/30 dark:bg-teal-500/10'
               >
                 <div className='flex items-start gap-3'>
                   <div className='rounded-full bg-white p-2 text-cyan-700 shadow-sm'>
@@ -426,7 +426,7 @@ function Step3Report({
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className='rounded-[2rem] border border-amber-100 bg-amber-50/80 p-7 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)]'
+                className='rounded-lg border border-slate-200 bg-white p-7 shadow-sm dark:border-white/10 dark:bg-slate-900'
               >
                 <div className='flex items-start gap-3'>
                   <div className='rounded-full bg-white p-2 text-amber-600 shadow-sm'>
@@ -462,7 +462,7 @@ function Step3Report({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className='rounded-[2rem] border border-white/80 bg-white/86 p-6 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)] backdrop-blur md:p-7'
+              className='rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-slate-900 md:p-7'
             >
               <div className='flex items-center gap-3'>
                 <div className='rounded-xl bg-cyan-50 p-3 text-cyan-700'>
@@ -496,7 +496,7 @@ function Step3Report({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className='rounded-[2rem] border border-white/80 bg-white/86 p-6 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)] backdrop-blur md:p-7'
+              className='rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-slate-900 md:p-7'
             >
               <h3 className='text-lg font-semibold text-slate-900'>Question breakdown</h3>
 

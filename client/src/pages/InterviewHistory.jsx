@@ -428,14 +428,14 @@ function InterviewHistory() {
                         </div>
 
                         <div className='flex items-center gap-6 lg:justify-end'>
-                          <div className='rounded-[1.5rem] bg-gradient-to-br from-emerald-50 to-cyan-50 px-5 py-4 text-center'>
-                            <p className='text-xs uppercase tracking-[0.18em] text-slate-400'>Score</p>
-                            <p className='mt-2 text-2xl font-semibold text-slate-900'>
+                          <div className='rounded-lg border border-slate-200 bg-slate-50 px-5 py-4 text-center dark:border-white/10 dark:bg-slate-950'>
+                            <p className='text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400'>Score</p>
+                            <p className='mt-2 text-2xl font-semibold text-slate-950 dark:text-white'>
                               {Number(item.finalScore || 0).toFixed(1)}/10
                             </p>
                           </div>
 
-                          <div className='hidden items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 md:inline-flex'>
+                          <div className='hidden items-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 dark:border-white/10 dark:bg-slate-950 dark:text-slate-200 md:inline-flex'>
                             View Report
                             <BsArrowRight size={14} />
                           </div>

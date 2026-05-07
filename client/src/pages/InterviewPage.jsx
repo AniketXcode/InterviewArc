@@ -120,28 +120,23 @@ function InterviewPage() {
   }
 
   return (
-    <div className='relative min-h-screen overflow-hidden bg-[#eef5f4] text-slate-900'>
-      <div className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(15,118,110,0.16),transparent_24%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.14),transparent_30%),radial-gradient(circle_at_bottom,rgba(15,23,42,0.06),transparent_40%)]' />
-      <div className='pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[linear-gradient(180deg,rgba(2,6,23,0.06),transparent)]' />
-      <div className='pointer-events-none absolute left-[-120px] top-20 h-72 w-72 rounded-full bg-teal-300/20 blur-3xl' />
-      <div className='pointer-events-none absolute right-[-120px] top-16 h-80 w-80 rounded-full bg-sky-300/20 blur-3xl' />
-      <div className='pointer-events-none absolute bottom-[-120px] left-1/3 h-80 w-80 rounded-full bg-emerald-200/20 blur-3xl' />
+    <div className='relative min-h-screen overflow-hidden bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100'>
 
-      <div className='relative z-10 px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-6'>
+      <div className='relative z-10 px-2.5 py-3 sm:px-4 sm:py-5 md:px-6 md:py-6'>
         <div className='mx-auto max-w-7xl'>
-          <div className='mb-5 flex flex-col gap-3 sm:mb-6 md:flex-row md:items-center md:justify-between'>
-            <div className='flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center'>
+          <div className='mb-3 flex flex-col gap-2 sm:mb-6 sm:gap-3 md:flex-row md:items-center md:justify-between'>
+            <div className='grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3'>
               <button
                 onClick={() => navigate('/')}
-                className='inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/80 bg-white/80 px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm backdrop-blur transition hover:text-slate-900 sm:w-auto sm:justify-start'
+                className='inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/80 bg-white/80 px-3 py-2 text-xs font-medium text-slate-700 shadow-sm backdrop-blur transition hover:text-slate-900 sm:w-auto sm:justify-start sm:px-4 sm:py-2.5 sm:text-sm'
               >
                 <BsArrowLeft size={14} />
                 Exit to home
               </button>
 
-              <div className='inline-flex w-full items-center justify-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-4 py-2.5 text-sm text-emerald-700 shadow-sm backdrop-blur sm:w-auto sm:justify-start'>
+              <div className='inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-3 py-2 text-xs text-emerald-700 shadow-sm backdrop-blur sm:w-auto sm:justify-start sm:px-4 sm:py-2.5 sm:text-sm'>
                 <BsStars size={15} className='text-cyan-500' />
-                Guided interview flow
+                Guided flow
               </div>
             </div>
 
@@ -156,19 +151,19 @@ function InterviewPage() {
             )}
           </div>
 
-          <div className='overflow-hidden rounded-[1.8rem] border border-white/90 bg-white/78 shadow-[0_35px_110px_-50px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:rounded-[2.2rem]'>
-            <div className='border-b border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(247,250,252,0.82))] px-4 py-4 sm:px-5 sm:py-5 md:px-7 md:py-6'>
-              <div className='flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between'>
+          <div className='overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-slate-900'>
+            <div className='border-b border-slate-200 bg-white px-3.5 py-4 dark:border-white/10 dark:bg-slate-900 sm:px-5 sm:py-5 md:px-7 md:py-6'>
+              <div className='flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'>
                 <div className='max-w-2xl'>
-                  <p className='text-xs uppercase tracking-[0.26em] text-teal-700'>Interview workspace</p>
-                  <h1 className='mt-3 text-2xl font-semibold leading-tight text-slate-900 sm:text-[2rem] md:text-4xl'>
+                  <p className='text-[11px] uppercase tracking-[0.24em] text-teal-700 sm:text-xs'>Interview workspace</p>
+                  <h1 className='mt-2 text-xl font-semibold leading-tight text-slate-900 sm:mt-3 sm:text-[2rem] md:text-4xl'>
                     {activeStep?.title === 'Setup'
                       ? 'Prepare a focused interview round'
                       : activeStep?.title === 'Interview'
                         ? 'Stay in the flow while the AI leads the round'
                         : 'Review your performance and next steps'}
                   </h1>
-                  <p className='mt-3 max-w-xl text-sm leading-6 text-slate-500 sm:leading-7'>
+                  <p className='mt-2 max-w-xl text-xs leading-5 text-slate-500 sm:mt-3 sm:text-sm sm:leading-7'>
                     {activeStep?.desc}
                   </p>
                 </div>
@@ -187,15 +182,15 @@ function InterviewPage() {
                 )}
               </div>
 
-              <div className='mt-6'>
-                <div className='h-2 overflow-hidden rounded-full bg-slate-100'>
+              <div className='mt-4 sm:mt-6'>
+                <div className='h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800'>
                   <div
-                    className='h-full rounded-full bg-gradient-to-r from-teal-600 via-emerald-500 to-sky-400 transition-all duration-500'
+                    className='h-full rounded-full bg-teal-600 transition-all duration-500'
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
 
-                <div className='mt-5 -mx-1 flex gap-3 overflow-x-auto px-1 pb-1 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0'>
+                <div className='mt-4 -mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1 md:mx-0 md:grid md:grid-cols-3 md:gap-3 md:overflow-visible md:px-0'>
                   {steps.map((item) => {
                     const isActive = item.id === step
                     const isComplete = item.id < step
@@ -203,22 +198,22 @@ function InterviewPage() {
                     return (
                       <div
                         key={item.id}
-                        className={`min-w-[250px] shrink-0 snap-start rounded-[1.35rem] border px-4 py-4 transition md:min-w-0 md:rounded-[1.6rem] ${
+                        className={`min-w-[230px] shrink-0 snap-start rounded-lg border px-3 py-3 transition md:min-w-0 md:px-4 md:py-4 ${
                           isActive
-                            ? 'border-sky-200 bg-sky-50/80 shadow-[0_18px_45px_-35px_rgba(14,165,233,0.45)]'
+                            ? 'border-teal-300 bg-teal-50 dark:border-teal-500/40 dark:bg-teal-500/10'
                             : isComplete
-                              ? 'border-emerald-100 bg-emerald-50/80'
-                              : 'border-white/80 bg-white/82'
+                              ? 'border-teal-200 bg-teal-50 dark:border-teal-500/30 dark:bg-teal-500/10'
+                              : 'border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950'
                         }`}
                       >
                         <div className='flex items-center gap-3'>
                           <div
-                            className={`rounded-2xl p-3 ${
+                            className={`rounded-xl p-2.5 md:rounded-2xl md:p-3 ${
                               isActive
-                                ? 'bg-cyan-500 text-white'
+                                ? 'bg-teal-600 text-white'
                                 : isComplete
-                                  ? 'bg-emerald-500 text-white'
-                                  : 'bg-slate-100 text-slate-500'
+                                  ? 'bg-teal-600 text-white'
+                                  : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'
                             }`}
                           >
                             {isComplete ? <BsCheck2Circle size={18} /> : item.icon}
@@ -226,7 +221,7 @@ function InterviewPage() {
 
                           <div>
                             <p className='text-sm font-semibold text-slate-900'>{item.title}</p>
-                            <p className='mt-1 text-xs leading-5 text-slate-500'>{item.desc}</p>
+                            <p className='mt-1 line-clamp-2 text-xs leading-5 text-slate-500'>{item.desc}</p>
                           </div>
                         </div>
                       </div>

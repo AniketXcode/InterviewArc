@@ -1,2 +1,102 @@
 @import "tailwindcss";
 @custom-variant dark (&:is(.dark *));
+
+@layer base {
+  body {
+    background: #f8fafc;
+  }
+
+  .dark body {
+    background: #020617;
+  }
+}
+
+@layer components {
+  [class*="bg-[#f4fbfb]"],
+  [class*="bg-[#eef6f6]"],
+  [class*="bg-[#eef5f4]"] {
+    background-color: #f8fafc !important;
+  }
+
+  [class*="radial-gradient"],
+  .blur-3xl {
+    display: none !important;
+  }
+
+  [class*="rounded-[2"],
+  [class*="rounded-[1.8"],
+  [class*="rounded-[1.7"],
+  [class*="rounded-3xl"],
+  [class*="rounded-4xl"] {
+    border-radius: 0.75rem !important;
+  }
+
+  [class*="shadow-["],
+  .shadow-xl,
+  .shadow-lg,
+  .shadow-md {
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08) !important;
+  }
+
+  [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+  }
+
+  .dark [class*="bg-white"],
+  .dark [class*="bg-slate-50"],
+  .dark [class*="bg-[#f4fbfb]"],
+  .dark [class*="bg-[#eef6f6]"],
+  .dark [class*="bg-[#eef5f4]"] {
+    background-color: #0f172a !important;
+  }
+
+  .dark [class*="bg-slate-100"],
+  .dark [class*="bg-slate-200"] {
+    background-color: #1e293b !important;
+  }
+
+  .dark [class*="border-white"],
+  .dark [class*="border-slate-100"],
+  .dark [class*="border-slate-200"],
+  .dark [class*="border-slate-300"] {
+    border-color: rgba(148, 163, 184, 0.22) !important;
+  }
+
+  .dark [class*="text-slate-950"],
+  .dark [class*="text-slate-900"],
+  .dark [class*="text-slate-800"],
+  .dark [class*="text-slate-700"] {
+    color: #f8fafc !important;
+  }
+
+  .dark [class*="text-slate-600"],
+  .dark [class*="text-slate-500"],
+  .dark [class*="text-slate-400"] {
+    color: #cbd5e1 !important;
+  }
+
+  .dark input,
+  .dark textarea,
+  .dark select {
+    background-color: #020617 !important;
+    border-color: rgba(148, 163, 184, 0.26) !important;
+    color: #f8fafc !important;
+  }
+
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: #64748b !important;
+  }
+
+  .dark [class*="bg-teal-50"],
+  .dark [class*="bg-emerald-50"],
+  .dark [class*="bg-cyan-50"] {
+    background-color: rgba(20, 184, 166, 0.12) !important;
+  }
+
+  .dark [class*="text-teal-700"],
+  .dark [class*="text-emerald-700"],
+  .dark [class*="text-cyan-700"] {
+    color: #5eead4 !important;
+  }
+}

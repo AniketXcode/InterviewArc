@@ -4,13 +4,16 @@ import { motion } from 'motion/react'
 import {
   BsArrowLeft,
   BsBarChart,
+  BsBriefcase,
   BsCheck2Circle,
+  BsCodeSlash,
   BsDownload,
   BsFileEarmarkText,
   BsGeoAlt,
   BsGlobe2,
   BsLightningCharge,
   BsPatchCheck,
+  BsPersonCheck,
   BsPlus,
   BsStars,
   BsTelephone,
@@ -29,11 +32,112 @@ const atsSignals = [
   'Simple ATS-friendly layout'
 ]
 
+const resumeTemplates = [
+  {
+    id: 'software',
+    name: 'Software Engineer',
+    badge: 'Tech role',
+    icon: BsCodeSlash,
+    accentClass: 'from-sky-500 to-emerald-400',
+    chipClass: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300',
+    pdfAccent: [14, 165, 233],
+    pdfAccentDark: [2, 132, 199],
+    data: {
+      role: 'Frontend Developer',
+      summary: 'Frontend developer with hands-on experience building responsive React applications, integrating REST APIs, and improving page performance. Strong in component architecture, state management, accessibility, and translating product requirements into polished user experiences.',
+      experience: [
+        {
+          title: 'Frontend Developer',
+          company: 'Product Studio',
+          duration: 'Jan 2024 - Present',
+          description: 'Built reusable React components for dashboard workflows, reducing repeated UI work by 35%. Integrated authentication, API error states, and analytics events to improve product reliability and user visibility.'
+        },
+        {
+          title: 'Web Developer Intern',
+          company: 'Digital Labs',
+          duration: 'Jun 2023 - Dec 2023',
+          description: 'Shipped landing pages and internal tools with React, Tailwind CSS, and Firebase. Improved Lighthouse performance score from 72 to 91 by optimizing images, lazy loading routes, and reducing unused scripts.'
+        }
+      ],
+      education: [
+        { degree: 'B.Tech in Computer Science', institution: 'Your University', duration: '2020 - 2024' }
+      ],
+      skills: 'React, JavaScript, TypeScript, Tailwind CSS, Redux, Node.js, REST APIs, Git, Firebase, Performance Optimization'
+    }
+  },
+  {
+    id: 'business',
+    name: 'Business Analyst',
+    badge: 'Strategy role',
+    icon: BsBarChart,
+    accentClass: 'from-emerald-500 to-lime-400',
+    chipClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300',
+    pdfAccent: [16, 185, 129],
+    pdfAccentDark: [5, 150, 105],
+    data: {
+      role: 'Business Analyst',
+      summary: 'Business analyst skilled at converting ambiguous requirements into clear product workflows, dashboards, and stakeholder-ready insights. Experienced with SQL, Excel, user research, documentation, and cross-functional delivery.',
+      experience: [
+        {
+          title: 'Business Analyst',
+          company: 'Growth Operations',
+          duration: 'Feb 2024 - Present',
+          description: 'Mapped customer onboarding journeys and identified process gaps that reduced ticket escalations by 22%. Created weekly KPI dashboards for leadership using SQL extracts, Excel models, and concise business narratives.'
+        },
+        {
+          title: 'Operations Intern',
+          company: 'ScaleWorks',
+          duration: 'Jul 2023 - Jan 2024',
+          description: 'Documented product requirements, coordinated sprint handoffs, and maintained issue trackers for a 6-member product team. Helped standardize reporting templates across sales and customer success.'
+        }
+      ],
+      education: [
+        { degree: 'BBA / MBA / Relevant Degree', institution: 'Your Institute', duration: '2020 - 2024' }
+      ],
+      skills: 'SQL, Excel, Power BI, Requirement Gathering, User Stories, Process Mapping, Stakeholder Management, KPI Reporting, Jira'
+    }
+  },
+  {
+    id: 'fresher',
+    name: 'Fresher Starter',
+    badge: 'Entry level',
+    icon: BsPersonCheck,
+    accentClass: 'from-cyan-500 to-violet-500',
+    chipClass: 'bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300',
+    pdfAccent: [6, 182, 212],
+    pdfAccentDark: [8, 145, 178],
+    data: {
+      role: 'Entry-Level Professional',
+      summary: 'Motivated graduate with strong fundamentals, project experience, and a quick learning mindset. Comfortable working with teams, documenting work clearly, and using modern tools to solve practical business and technology problems.',
+      experience: [
+        {
+          title: 'Academic Project Lead',
+          company: 'Final Year Project',
+          duration: 'Aug 2023 - Apr 2024',
+          description: 'Led a 4-member team to design and present a working project prototype. Managed task planning, research, documentation, testing, and final presentation for faculty evaluation.'
+        },
+        {
+          title: 'Intern / Volunteer',
+          company: 'Campus or Organization',
+          duration: 'May 2023 - Jul 2023',
+          description: 'Supported day-to-day coordination, prepared reports, and collaborated with peers to complete assigned tasks on time. Built confidence in communication, ownership, and structured problem-solving.'
+        }
+      ],
+      education: [
+        { degree: 'Bachelor Degree / Diploma', institution: 'Your College', duration: '2020 - 2024' }
+      ],
+      skills: 'Communication, Problem Solving, MS Excel, Google Workspace, Research, Documentation, Team Collaboration, Presentation Skills'
+    }
+  }
+]
+
 function ResumeBuilder() {
   const navigate = useNavigate()
+  const [selectedTemplate, setSelectedTemplate] = useState(resumeTemplates[0].id)
 
   const [personalInfo, setPersonalInfo] = useState({
     name: '',
+    role: '',
     email: '',
     phone: '',
     location: '',
@@ -56,10 +160,16 @@ function ResumeBuilder() {
     [skills]
   )
 
+  const activeTemplate = useMemo(
+    () => resumeTemplates.find((template) => template.id === selectedTemplate) || resumeTemplates[0],
+    [selectedTemplate]
+  )
+
   const resumeReadiness = useMemo(() => {
     let completed = 0
 
     if (personalInfo.name.trim()) completed += 1
+    if (personalInfo.role.trim()) completed += 1
     if (personalInfo.email.trim()) completed += 1
     if (personalInfo.phone.trim()) completed += 1
     if (personalInfo.summary.trim().length > 40) completed += 1
@@ -67,11 +177,11 @@ function ResumeBuilder() {
     if (education.some((item) => item.degree.trim() || item.institution.trim())) completed += 1
     if (skillsCount >= 4) completed += 1
 
-    const score = Math.round((completed / 7) * 100)
+    const score = Math.round((completed / 8) * 100)
 
     return {
       completed,
-      total: 7,
+      total: 8,
       score,
       label: score >= 85 ? 'Strong' : score >= 60 ? 'Good start' : 'Needs detail'
     }
@@ -93,14 +203,26 @@ function ResumeBuilder() {
     setEducation(updated)
   }
 
+  const applyTemplate = (template) => {
+    setSelectedTemplate(template.id)
+    setPersonalInfo((current) => ({
+      ...current,
+      role: template.data.role,
+      summary: template.data.summary
+    }))
+    setExperience(template.data.experience)
+    setEducation(template.data.education)
+    setSkills(template.data.skills)
+  }
+
   const generatePDF = () => {
     const doc = new jsPDF('p', 'mm', 'a4')
     const margin = 16
     const pageWidth = doc.internal.pageSize.getWidth()
     const pageHeight = doc.internal.pageSize.getHeight()
     const contentWidth = pageWidth - margin * 2
-    const accent = [16, 185, 129]
-    const accentDark = [5, 150, 105]
+    const accent = activeTemplate.pdfAccent
+    const accentDark = activeTemplate.pdfAccentDark
     const textPrimary = [15, 23, 42]
     const textMuted = [100, 116, 139]
     const lineColor = [226, 232, 240]
@@ -142,21 +264,26 @@ function ResumeBuilder() {
     doc.setFontSize(22)
     doc.text(personalInfo.name || 'Your Name', margin + 10, currentY + 10)
 
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(...accentDark)
+    doc.setFontSize(10)
+    doc.text(personalInfo.role || activeTemplate.data.role, margin + 10, currentY + 15.2)
+
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(...textMuted)
-    doc.setFontSize(10)
+    doc.setFontSize(9)
     const contactInfo = [
       personalInfo.email,
       personalInfo.phone,
       personalInfo.location,
       personalInfo.linkedin
-    ].filter(Boolean).join('  •  ')
-    doc.text(contactInfo || 'Email  •  Phone  •  Location', margin + 10, currentY + 17)
+    ].filter(Boolean).join('  |  ')
+    doc.text(contactInfo || 'Email  |  Phone  |  Location', margin + 10, currentY + 21.5)
 
     doc.setTextColor(...accentDark)
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(9)
-    doc.text('ATS-READY RESUME', pageWidth - margin - 2, currentY + 8, { align: 'right' })
+    doc.text(activeTemplate.name.toUpperCase(), pageWidth - margin - 2, currentY + 8, { align: 'right' })
 
     doc.setTextColor(...textMuted)
     doc.setFont('helvetica', 'normal')
@@ -208,7 +335,7 @@ function ResumeBuilder() {
         doc.text(exp.company || 'Company Name', margin + 4, currentY + 9)
 
         if (exp.description) {
-          const bulletText = descriptionLines.map((line, index) => `${index === 0 ? '• ' : '  '}${line}`)
+          const bulletText = descriptionLines.map((line, index) => `${index === 0 ? '- ' : '  '}${line}`)
           doc.setFont('helvetica', 'normal')
           doc.setTextColor(...textPrimary)
           doc.setFontSize(9.5)
@@ -251,7 +378,7 @@ function ResumeBuilder() {
         .split(',')
         .map((item) => item.trim())
         .filter(Boolean)
-        .join('  •  ')
+        .join('  |  ')
 
       ensureSpace(18)
       doc.setFillColor(248, 250, 252)
@@ -367,6 +494,122 @@ function ResumeBuilder() {
 
                 <div className='rounded-[1.6rem] border border-white/80 bg-white/88 p-4 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.4)] backdrop-blur dark:border-white/10 dark:bg-slate-900/75 sm:p-5'>
                   <div className='flex items-start gap-3'>
+                    <div className='rounded-2xl bg-emerald-50 p-3 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'>
+                      <BsBriefcase size={18} />
+                    </div>
+                    <div>
+                      <h3 className='text-lg font-semibold text-slate-900 dark:text-white'>Resume templates</h3>
+                      <p className='mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400'>
+                        Pick a realistic starter template, then edit it into your own profile.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className='mt-5 grid gap-3'>
+                    {resumeTemplates.map((template) => {
+                      const TemplateIcon = template.icon
+                      const isSelected = selectedTemplate === template.id
+
+                      return (
+                        <button
+                          key={template.id}
+                          type='button'
+                          onClick={() => applyTemplate(template)}
+                          className={`group w-full rounded-[1.15rem] border p-4 text-left transition ${
+                            isSelected
+                              ? 'border-emerald-300 bg-emerald-50/80 shadow-sm dark:border-emerald-400/40 dark:bg-emerald-500/10'
+                              : 'border-slate-100 bg-slate-50/80 hover:border-slate-200 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10'
+                          }`}
+                        >
+                          <div className='flex items-center justify-between gap-3'>
+                            <div className='flex items-center gap-3'>
+                              <div className={`rounded-2xl bg-gradient-to-r ${template.accentClass} p-2.5 text-white shadow-sm`}>
+                                <TemplateIcon size={17} />
+                              </div>
+                              <div>
+                                <p className='text-sm font-semibold text-slate-900 dark:text-white'>{template.name}</p>
+                                <p className='mt-1 text-xs text-slate-500 dark:text-slate-400'>{template.data.role}</p>
+                              </div>
+                            </div>
+                            <span className={`rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] ${template.chipClass}`}>
+                              {isSelected ? 'Active' : template.badge}
+                            </span>
+                          </div>
+                          <p className='mt-3 line-clamp-2 text-xs leading-5 text-slate-500 dark:text-slate-400'>
+                            {template.data.summary}
+                          </p>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div className='rounded-[1.6rem] border border-white/80 bg-white/88 p-4 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.4)] backdrop-blur dark:border-white/10 dark:bg-slate-900/75 sm:p-5'>
+                  <div className='flex items-center justify-between gap-3'>
+                    <div>
+                      <h3 className='text-lg font-semibold text-slate-900 dark:text-white'>Live resume feel</h3>
+                      <p className='mt-1 text-sm text-slate-500 dark:text-slate-400'>Preview the first impression before export.</p>
+                    </div>
+                    <span className={`rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] ${activeTemplate.chipClass}`}>
+                      {activeTemplate.name}
+                    </span>
+                  </div>
+
+                  <div className='mt-5 overflow-hidden rounded-[1.2rem] border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-slate-950'>
+                    <div className={`h-2 bg-gradient-to-r ${activeTemplate.accentClass}`} />
+                    <div className='p-5'>
+                      <div className='flex flex-col gap-2 border-b border-slate-100 pb-4 dark:border-white/10'>
+                        <h4 className='text-2xl font-bold leading-tight text-slate-950 dark:text-white'>
+                          {personalInfo.name || 'Your Name'}
+                        </h4>
+                        <p className='text-sm font-semibold text-emerald-700 dark:text-emerald-300'>
+                          {personalInfo.role || activeTemplate.data.role}
+                        </p>
+                        <p className='text-xs leading-5 text-slate-500 dark:text-slate-400'>
+                          {[personalInfo.email || 'email@example.com', personalInfo.phone || '+91 00000 00000', personalInfo.location || 'City, Country'].join(' | ')}
+                        </p>
+                      </div>
+
+                      <div className='mt-4 space-y-4'>
+                        <div>
+                          <p className='text-xs font-bold uppercase tracking-[0.18em] text-slate-400'>Summary</p>
+                          <p className='mt-2 text-xs leading-5 text-slate-600 dark:text-slate-300'>
+                            {personalInfo.summary || activeTemplate.data.summary}
+                          </p>
+                        </div>
+                        <div>
+                          <p className='text-xs font-bold uppercase tracking-[0.18em] text-slate-400'>Experience</p>
+                          <div className='mt-2 rounded-xl bg-slate-50 p-3 dark:bg-white/5'>
+                            <p className='text-sm font-semibold text-slate-900 dark:text-white'>
+                              {experience[0]?.title || activeTemplate.data.experience[0].title}
+                            </p>
+                            <p className='mt-1 text-xs text-slate-500 dark:text-slate-400'>
+                              {experience[0]?.company || activeTemplate.data.experience[0].company} | {experience[0]?.duration || activeTemplate.data.experience[0].duration}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <p className='text-xs font-bold uppercase tracking-[0.18em] text-slate-400'>Skills</p>
+                          <div className='mt-2 flex flex-wrap gap-2'>
+                            {(skills || activeTemplate.data.skills)
+                              .split(',')
+                              .map((item) => item.trim())
+                              .filter(Boolean)
+                              .slice(0, 6)
+                              .map((item) => (
+                                <span key={item} className='rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600 dark:bg-white/10 dark:text-slate-300'>
+                                  {item}
+                                </span>
+                              ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className='rounded-[1.6rem] border border-white/80 bg-white/88 p-4 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.4)] backdrop-blur dark:border-white/10 dark:bg-slate-900/75 sm:p-5'>
+                  <div className='flex items-start gap-3'>
                     <div className='rounded-2xl bg-cyan-50 p-3 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300'>
                       <BsPatchCheck size={18} />
                     </div>
@@ -442,6 +685,10 @@ function ResumeBuilder() {
                   <div className='mt-5 grid gap-4 sm:grid-cols-2'>
                     <div className='relative'>
                       <input name='name' placeholder='Full Name' value={personalInfo.name} onChange={handleInfoChange} className='w-full rounded-[1.15rem] border border-slate-200 bg-slate-50/70 px-4 py-3.5 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-emerald-400 dark:focus:bg-white/10' />
+                    </div>
+                    <div className='relative'>
+                      <BsBriefcase className='pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500' />
+                      <input name='role' placeholder='Target Role (e.g., Frontend Developer)' value={personalInfo.role} onChange={handleInfoChange} className='w-full rounded-[1.15rem] border border-slate-200 bg-slate-50/70 py-3.5 pl-11 pr-4 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-emerald-400 dark:focus:bg-white/10' />
                     </div>
                     <div className='relative'>
                       <HiOutlineMail className='pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500' />

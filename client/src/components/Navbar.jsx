@@ -49,15 +49,15 @@ function Navbar() {
   }
 
   return (
-    <div className='sticky top-0 z-40 px-3 pt-4 sm:px-4 sm:pt-5 md:px-6'>
+    <div className='sticky top-0 z-40 border-b border-slate-200 bg-white/95 px-3 py-3 backdrop-blur dark:border-white/10 dark:bg-slate-950/95 sm:px-4 md:px-6'>
       <motion.div
         initial={{ opacity: 0, y: -28 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className='mx-auto flex w-full max-w-6xl items-center justify-between gap-3 rounded-[1.35rem] border border-white/70 bg-white/78 px-3 py-3 shadow-[0_18px_55px_-30px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/82 sm:rounded-[1.7rem] sm:px-4 md:px-6'
+        className='mx-auto flex w-full max-w-6xl items-center justify-between gap-3'
       >
         <div onClick={() => navigate('/')} className='flex cursor-pointer items-center gap-3'>
-          <div className='rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-400 p-2.5 text-white shadow-lg shadow-cyan-200/60 sm:p-3'>
+          <div className='rounded-lg bg-teal-600 p-2.5 text-white sm:p-3'>
             <BsRobot size={17} />
           </div>
 
@@ -80,22 +80,22 @@ function Navbar() {
                   setShowUserPopup(false)
                 })
               }
-              className='flex items-center gap-2 rounded-full border border-emerald-100 bg-gradient-to-r from-emerald-50 to-cyan-50 px-3 py-2 text-sm font-medium text-slate-700 transition hover:shadow-md md:px-4'
+              className='flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-teal-300 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200 md:px-4'
             >
-              <div className='rounded-full bg-white p-1 text-emerald-600'>
+              <div className='rounded-md bg-teal-50 p-1 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300'>
                 <BsCoin size={14} />
               </div>
               <span className='hidden text-xs uppercase tracking-[0.12em] text-slate-400 sm:inline'>Credits</span>
               <span>{userData?.credits || 0}</span>
               <span className='hidden text-slate-300 sm:inline'>/</span>
-              <span className='hidden text-xs uppercase tracking-[0.12em] text-emerald-600 sm:inline'>Coins</span>
-              <span className='hidden text-emerald-700 sm:inline'>{userData?.coins || 0}</span>
+              <span className='hidden text-xs uppercase tracking-[0.12em] text-teal-700 sm:inline'>Coins</span>
+              <span className='hidden text-teal-700 sm:inline'>{userData?.coins || 0}</span>
             </button>
 
             {showCreditPopup && (
-              <div className='absolute right-0 mt-3 w-[min(18rem,calc(100vw-1.5rem))] overflow-hidden rounded-[1.3rem] border border-white/80 bg-white/95 shadow-[0_25px_70px_-35px_rgba(15,23,42,0.5)] backdrop-blur sm:w-72 sm:rounded-[1.5rem]'>
-                <div className='border-b border-slate-100 bg-gradient-to-r from-emerald-50 to-cyan-50 px-5 py-4'>
-                  <p className='text-xs uppercase tracking-[0.2em] text-emerald-600'>Credits</p>
+              <div className='absolute right-0 mt-3 w-[min(18rem,calc(100vw-1.5rem))] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg dark:border-white/10 dark:bg-slate-900 sm:w-72'>
+                <div className='border-b border-slate-100 bg-slate-50 px-5 py-4 dark:border-white/10 dark:bg-slate-950'>
+                  <p className='text-xs uppercase tracking-[0.2em] text-teal-700 dark:text-teal-300'>Credits</p>
                   <h3 className='mt-1 text-sm font-semibold text-slate-900'>Keep your interview streak going</h3>
                 </div>
 
@@ -105,14 +105,14 @@ function Navbar() {
                   </p>
 
                   <div className='mt-4 grid gap-3'>
-                    <div className='rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600'>
+                    <div className='rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:bg-slate-950 dark:text-slate-300'>
                       <div className='flex items-center justify-between'>
                         <span>Credits</span>
                         <span className='font-semibold text-slate-900'>{userData?.credits || 0}</span>
                       </div>
                       <div className='mt-2 flex items-center justify-between'>
                         <span>Coins</span>
-                        <span className='font-semibold text-emerald-700'>{userData?.coins || 0}</span>
+                        <span className='font-semibold text-teal-700'>{userData?.coins || 0}</span>
                       </div>
                       <div className='mt-2 flex items-center justify-between'>
                         <span>Interview tickets</span>
@@ -124,7 +124,7 @@ function Navbar() {
 
                     <button
                       onClick={() => navigate('/rewards')}
-                      className='inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:text-slate-900'
+                      className='inline-flex w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-teal-300 hover:text-slate-900'
                     >
                       Open Rewards Hub
                       <BsGift size={15} />
@@ -132,7 +132,7 @@ function Navbar() {
 
                     <button
                       onClick={() => navigate('/pricing')}
-                      className='inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800'
+                      className='inline-flex w-full items-center justify-center gap-2 rounded-md bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800'
                     >
                       Buy More Credits
                       <BsChevronRight size={15} />
@@ -145,7 +145,7 @@ function Navbar() {
 
           <button
             onClick={() => navigate('/resources')}
-            className='hidden items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:border-cyan-200 hover:text-slate-900 dark:border-white/10 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:text-white lg:inline-flex'
+            className='hidden items-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:border-teal-300 hover:text-slate-900 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200 dark:hover:text-white lg:inline-flex'
           >
             <BsBook size={15} />
             Resources
@@ -153,7 +153,7 @@ function Navbar() {
 
           <button
             onClick={() => handleProtectedAction(() => navigate('/history'))}
-            className='hidden items-center gap-2 rounded-full border border-slate-200 bg-white/80 dark:border-white/10 dark:bg-slate-800/80 dark:text-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:border-cyan-200 hover:text-slate-900 dark:hover:text-white md:inline-flex'
+            className='hidden items-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:border-teal-300 hover:text-slate-900 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200 dark:hover:text-white md:inline-flex'
           >
             <BsGraphUpArrow size={15} />
             Progress
@@ -161,7 +161,7 @@ function Navbar() {
 
           <button
             onClick={() => handleProtectedAction(() => navigate('/rewards'))}
-            className='hidden items-center gap-2 rounded-full border border-amber-100 bg-white/90 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:border-amber-200 hover:text-slate-900 md:inline-flex'
+            className='hidden items-center gap-2 rounded-md border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:border-teal-300 hover:text-slate-900 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200 md:inline-flex'
           >
             <BsGift size={15} />
             Rewards
@@ -169,7 +169,7 @@ function Navbar() {
 
           <button
             onClick={toggleTheme}
-            className='inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-600 transition hover:border-cyan-200 hover:text-slate-900 dark:border-white/10 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:text-white'
+            className='inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 transition hover:border-teal-300 hover:text-slate-900 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200 dark:hover:text-white'
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
           >
@@ -184,14 +184,14 @@ function Navbar() {
                   setShowCreditPopup(false)
                 })
               }
-              className='flex h-10 w-10 items-center justify-center rounded-full bg-slate-950 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800'
+              className='flex h-10 w-10 items-center justify-center rounded-md bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800'
             >
               {userData ? userData?.name.slice(0, 1).toUpperCase() : <FaUserAstronaut size={16} />}
             </button>
 
             {showUserPopup && (
-              <div className='absolute right-0 mt-3 w-[min(14rem,calc(100vw-1.5rem))] overflow-hidden rounded-[1.3rem] border border-white/80 bg-white/95 shadow-[0_25px_70px_-35px_rgba(15,23,42,0.5)] backdrop-blur sm:w-56 sm:rounded-[1.5rem]'>
-                <div className='border-b border-slate-100 bg-gradient-to-r from-slate-50 to-cyan-50 px-5 py-4'>
+              <div className='absolute right-0 mt-3 w-[min(14rem,calc(100vw-1.5rem))] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg dark:border-white/10 dark:bg-slate-900 sm:w-56'>
+                <div className='border-b border-slate-100 bg-slate-50 px-5 py-4 dark:border-white/10 dark:bg-slate-950'>
                   <p className='text-sm font-semibold text-slate-900'>{userData?.name}</p>
                   <p className='mt-1 text-xs uppercase tracking-[0.18em] text-slate-400'>Account</p>
                 </div>
@@ -199,7 +199,7 @@ function Navbar() {
                 <div className='p-3'>
                   <button
                     onClick={() => navigate('/resume-builder')}
-                    className='flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-900'
+                    className='flex w-full items-center justify-between rounded-md px-3 py-3 text-left text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-900'
                   >
                     ATS Resume Builder
                     <BsChevronRight size={14} />
@@ -207,7 +207,7 @@ function Navbar() {
 
                   <button
                     onClick={() => navigate('/history')}
-                    className='flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-900'
+                    className='flex w-full items-center justify-between rounded-md px-3 py-3 text-left text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-900'
                   >
                     Interview History
                     <BsChevronRight size={14} />
@@ -215,7 +215,7 @@ function Navbar() {
 
                   <button
                     onClick={() => navigate('/rewards')}
-                    className='flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-900'
+                    className='flex w-full items-center justify-between rounded-md px-3 py-3 text-left text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-900'
                   >
                     Rewards Hub
                     <BsChevronRight size={14} />
@@ -224,7 +224,7 @@ function Navbar() {
                   {userData?.isAdmin && (
                     <button
                       onClick={() => navigate('/admin/reward-orders')}
-                      className='flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-900'
+                      className='flex w-full items-center justify-between rounded-md px-3 py-3 text-left text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-900'
                     >
                       Admin Orders
                       <BsChevronRight size={14} />
@@ -233,7 +233,7 @@ function Navbar() {
 
                   <button
                     onClick={handleLogout}
-                    className='mt-1 flex w-full items-center gap-2 rounded-2xl px-3 py-3 text-left text-sm text-red-500 transition hover:bg-red-50'
+                    className='mt-1 flex w-full items-center gap-2 rounded-md px-3 py-3 text-left text-sm text-red-500 transition hover:bg-red-50'
                   >
                     <HiOutlineLogout size={16} />
                     Logout

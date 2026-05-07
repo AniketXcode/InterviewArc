@@ -172,60 +172,60 @@ function Step1SetUp({ onStart, isEmbedded = false }) {
       transition={{ duration: 0.45 }}
       className={wrapperClass}
     >
-      <div className='grid gap-4 lg:gap-6 xl:grid-cols-[0.9fr_1.1fr]'>
-        <div className='overflow-hidden rounded-[1.7rem] bg-slate-950 p-4 text-white shadow-[0_30px_90px_-35px_rgba(15,23,42,0.55)] sm:rounded-[2rem] sm:p-6 lg:p-7'>
-          <div className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-emerald-300'>
+      <div className='grid gap-3 lg:gap-6 xl:grid-cols-[0.9fr_1.1fr]'>
+        <div className='overflow-hidden rounded-lg border border-slate-200 bg-white p-3.5 text-slate-950 shadow-sm dark:border-white/10 dark:bg-slate-950 dark:text-white sm:p-6 lg:p-7'>
+          <div className='inline-flex items-center gap-2 rounded-md border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs text-teal-700 dark:border-teal-500/30 dark:bg-teal-500/10 dark:text-teal-300 sm:px-4 sm:py-2 sm:text-sm'>
             <BsStars size={15} />
             Interview setup
           </div>
 
-          <h2 className='mt-5 text-2xl font-semibold leading-tight sm:mt-6 sm:text-3xl'>
+          <h2 className='mt-4 text-xl font-semibold leading-tight sm:mt-6 sm:text-3xl'>
             Build a practice round that actually matches your target role
           </h2>
 
-          <p className='mt-4 max-w-xl text-sm leading-6 text-slate-300 sm:leading-7'>
+          <p className='mt-3 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:mt-4 sm:leading-7'>
             Add your role, experience level, and interview mode. If you upload a resume, the AI can pull in more relevant context automatically.
           </p>
 
-          <div className='mt-6 grid gap-3 sm:mt-8 sm:gap-4'>
+          <div className='-mx-1 mt-5 flex snap-x gap-3 overflow-x-auto px-1 pb-1 sm:mt-8 lg:grid lg:overflow-visible'>
             {setupHighlights.map((item) => (
               <div
                 key={item.title}
-                className='rounded-[1.2rem] border border-white/10 bg-white/5 p-4 sm:rounded-[1.5rem] sm:p-5'
+                className='min-w-[210px] shrink-0 snap-start rounded-lg border border-slate-200 bg-slate-50 p-3.5 dark:border-white/10 dark:bg-slate-900 sm:p-5 lg:min-w-0'
               >
-                <div className='inline-flex rounded-xl bg-white/10 p-3 text-emerald-300'>
+                <div className='inline-flex rounded-md bg-teal-50 p-2.5 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300 sm:p-3'>
                   {item.icon}
                 </div>
-                <h3 className='mt-4 text-lg font-semibold text-white'>{item.title}</h3>
-                <p className='mt-2 text-sm leading-6 text-slate-400'>{item.desc}</p>
+                <h3 className='mt-3 text-base font-semibold text-slate-950 dark:text-white sm:mt-4 sm:text-lg'>{item.title}</h3>
+                <p className='mt-2 text-xs leading-5 text-slate-600 dark:text-slate-300 sm:text-sm sm:leading-6'>{item.desc}</p>
               </div>
             ))}
           </div>
 
-          <div className='mt-5 rounded-[1.2rem] border border-white/10 bg-gradient-to-br from-white/8 to-white/4 p-4 sm:mt-6 sm:rounded-[1.5rem] sm:p-5'>
-            <div className='grid gap-4 sm:grid-cols-2'>
+          <div className='mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3.5 dark:border-white/10 dark:bg-slate-900 sm:mt-6 sm:p-5'>
+            <div className='grid grid-cols-2 gap-3 sm:gap-4'>
               <div>
-                <p className='text-sm text-slate-300'>Current credits</p>
-                <p className='mt-2 text-2xl font-semibold text-white sm:text-3xl'>{userData?.credits || 0}</p>
+                <p className='text-xs text-slate-500 dark:text-slate-400 sm:text-sm'>Current credits</p>
+                <p className='mt-1 text-2xl font-semibold text-slate-950 dark:text-white sm:mt-2 sm:text-3xl'>{userData?.credits || 0}</p>
               </div>
               <div>
-                <p className='text-sm text-slate-300'>Mock interview tickets</p>
-                <p className='mt-2 text-2xl font-semibold text-white sm:text-3xl'>
+                <p className='text-xs text-slate-500 dark:text-slate-400 sm:text-sm'>Mock tickets</p>
+                <p className='mt-1 text-2xl font-semibold text-slate-950 dark:text-white sm:mt-2 sm:text-3xl'>
                   {userData?.rewardInventory?.consumables?.mockInterviewTickets || 0}
                 </p>
               </div>
             </div>
-            <p className='mt-4 text-sm leading-6 text-slate-400'>
+            <p className='mt-3 text-xs leading-5 text-slate-600 dark:text-slate-300 sm:mt-4 sm:text-sm sm:leading-6'>
               Each new interview uses 50 credits. If credits run low, one redeemed mock interview ticket is used automatically.
             </p>
           </div>
         </div>
 
-        <div className='rounded-[1.7rem] border border-white/80 bg-white/86 p-4 shadow-[0_24px_70px_-40px_rgba(15,23,42,0.45)] backdrop-blur sm:rounded-[2rem] sm:p-5 md:p-7'>
+        <div className='rounded-lg border border-slate-200 bg-white p-3.5 shadow-sm dark:border-white/10 dark:bg-slate-900 sm:p-5 md:p-7'>
           <div className='flex flex-col gap-3 md:flex-row md:items-start md:justify-between'>
             <div>
-              <p className='text-xs font-medium uppercase tracking-[0.24em] text-emerald-600 sm:text-sm'>Session details</p>
-              <h2 className='mt-2 text-xl font-semibold text-slate-900 sm:text-2xl'>Customize your interview setup</h2>
+              <p className='text-[11px] font-medium uppercase tracking-[0.22em] text-emerald-600 sm:text-sm'>Session details</p>
+              <h2 className='mt-2 text-lg font-semibold text-slate-900 sm:text-2xl'>Customize your interview setup</h2>
             </div>
 
             {analysisDone && (
@@ -236,7 +236,7 @@ function Step1SetUp({ onStart, isEmbedded = false }) {
             )}
           </div>
 
-          <div className='mt-6 space-y-4 sm:mt-7 sm:space-y-5'>
+          <div className='mt-5 space-y-4 sm:mt-7 sm:space-y-5'>
             <div className='grid gap-5 md:grid-cols-2'>
               <label className='block'>
                 <span className='mb-2 block text-sm font-medium text-slate-700'>Target role</span>
