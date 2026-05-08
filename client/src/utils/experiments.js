@@ -1,5 +1,5 @@
 const experiments = {
-  homeCta: ['Start AI Interview', 'Practice for Free'],
+  homeCta: ['Start AI Interview', 'Start Interview'],
 }
 
 export const getVariant = (experimentName) => {
